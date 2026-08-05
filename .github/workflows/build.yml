@@ -41,24 +41,29 @@ jobs:
       - name: Build Android APK
         run: |
           mkdir -p build/android
+          set -o pipefail
           godot --headless --verbose --export-debug "Android" \
             "build/android/${EXPORT_NAME}.apk" > export.log 2>&1
           echo "Export exit code: $?"
           echo "--- Archivos en build/android: ---"
           ls -la build/android/ || true
-
-      - name: Verify APK
-        run: |
-          if [ -f "build/android/${EXPORT_NAME}.apk" ]; then
-            echo "✅ APK generado correctamente"
-            ls -lh build/android/${EXPORT_NAME}.apk
-          else
-            echo "❌ ERROR: no se generó el APK. Últimas líneas del export:"
-            tail -80 export.log
-            echo "::error::=== export.log === "
-            sed 's/%/%25/g; s/\r/\\r/g; s/\n/\\n/g' export.log | tail -80 | while IFS= read -r l; do echo "::error::$l"; done
+          echo "--- Fin del export.log ---"
+          cat export.log
+          # Falla explícitamente si no se generó el APK
+          if [ ! -f "build/android/${EXPORT_NAME}.apk" ]; then
+            echo "❌ NO se generó el APK"
             exit 1
           fi
+
+      - name: Upload logs (siempre)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-logs
+          path: |
+            export.log
+            import.log
+          if-no-files-found: ignore
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
