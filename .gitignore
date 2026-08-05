@@ -1,0 +1,26 @@
+# Godot-specific ignores
+.godot/
+export_presets.cfg
+
+# Imported assets
+*.import
+
+# Build outputs
+build/
+*.apk
+*.exe
+*.x86_64
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.log

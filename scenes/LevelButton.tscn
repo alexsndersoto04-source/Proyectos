@@ -1,0 +1,13 @@
+[gd_scene format=3]
+
+[node name="LevelButton" type="Button"]
+layout_mode = 1
+offset_right = 80.0
+offset_bottom = 80.0
+text = "1"
+
+[node name="script" type="GDScript" parent="."]
+script/source = "extends Button
+
+var level_number: int = 1
+"

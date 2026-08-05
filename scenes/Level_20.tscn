@@ -1,0 +1,216 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/Level.gd" id="1_level"]
+[ext_resource type="Script" path="res://scripts/Player.gd" id="2_player"]
+[ext_resource type="Script" path="res://scripts/HUD.gd" id="3_hud"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
+size = Vector2(32, 48)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_platform"]
+size = Vector2(100, 20)
+
+[node name="Level_20" type="Node2D"]
+script = ExtResource("1_level")
+level_number = 20
+level_name = "Neon City - Sector 20"
+
+[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
+
+[node name="ColorRect" type="ColorRect" parent="."]
+offset_left = -500.0
+offset_top = -500.0
+offset_right = 2500.0
+offset_bottom = 1500.0
+color = Color(0.05, 0.05, 0.12, 1)
+
+[node name="Platforms" type="Node2D" parent="."]
+
+[node name="Ground" type="StaticBody2D" parent="Platforms"]
+position = Vector2(400, 600)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platforms/Ground"]
+shape = SubResource("RectangleShape2D_platform")
+
+[node name="ColorRect" type="ColorRect" parent="Platforms/Ground"]
+offset_left = -400.0
+offset_top = -10.0
+offset_right = 400.0
+offset_bottom = 10.0
+color = Color(0.2, 0.3, 0.5, 1)
+
+[node name="Platform1" type="StaticBody2D" parent="Platforms"]
+position = Vector2(300, 480)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platforms/Platform1"]
+shape = SubResource("RectangleShape2D_platform")
+
+[node name="ColorRect" type="ColorRect" parent="Platforms/Platform1"]
+offset_left = -60.0
+offset_top = -10.0
+offset_right = 60.0
+offset_bottom = 10.0
+color = Color(0.3, 0.4, 0.6, 1)
+
+[node name="Platform2" type="StaticBody2D" parent="Platforms"]
+position = Vector2(600, 380)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platforms/Platform2"]
+shape = SubResource("RectangleShape2D_platform")
+
+[node name="ColorRect" type="ColorRect" parent="Platforms/Platform2"]
+offset_left = -60.0
+offset_top = -10.0
+offset_right = 60.0
+offset_bottom = 10.0
+color = Color(0.3, 0.4, 0.6, 1)
+
+[node name="Platform3" type="StaticBody2D" parent="Platforms"]
+position = Vector2(900, 280)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platforms/Platform3"]
+shape = SubResource("RectangleShape2D_platform")
+
+[node name="ColorRect" type="ColorRect" parent="Platforms/Platform3"]
+offset_left = -60.0
+offset_top = -10.0
+offset_right = 60.0
+offset_bottom = 10.0
+color = Color(0.3, 0.4, 0.6, 1)
+
+[node name="Platform4" type="StaticBody2D" parent="Platforms"]
+position = Vector2(1200, 380)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platforms/Platform4"]
+shape = SubResource("RectangleShape2D_platform")
+
+[node name="ColorRect" type="ColorRect" parent="Platforms/Platform4"]
+offset_left = -60.0
+offset_top = -10.0
+offset_right = 60.0
+offset_bottom = 10.0
+color = Color(0.3, 0.4, 0.6, 1)
+
+[node name="Platform5" type="StaticBody2D" parent="Platforms"]
+position = Vector2(1500, 280)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platforms/Platform5"]
+shape = SubResource("RectangleShape2D_platform")
+
+[node name="ColorRect" type="ColorRect" parent="Platforms/Platform5"]
+offset_left = -60.0
+offset_top = -10.0
+offset_right = 60.0
+offset_bottom = 10.0
+color = Color(0.3, 0.4, 0.6, 1)
+
+[node name="PlayerSpawn" type="Marker2D" parent="."]
+position = Vector2(100, 500)
+
+[node name="Player" type="CharacterBody2D" parent="."]
+position = Vector2(100, 500)
+script = ExtResource("2_player")
+add_to_group("player")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+shape = SubResource("RectangleShape2D_player")
+
+[node name="Sprite2D" type="Sprite2D" parent="Player"]
+
+[node name="DashTimer" type="Timer" parent="Player"]
+
+[node name="DashCooldownTimer" type="Timer" parent="Player"]
+
+[node name="VoidDashCooldownTimer" type="Timer" parent="Player"]
+
+[node name="CoyoteTimer" type="Timer" parent="Player"]
+
+[node name="JumpBufferTimer" type="Timer" parent="Player"]
+
+[node name="WallCheckLeft" type="RayCast2D" parent="Player"]
+position = Vector2(-16, 0)
+target_position = Vector2(0, 40)
+
+[node name="WallCheckRight" type="RayCast2D" parent="Player"]
+position = Vector2(16, 0)
+target_position = Vector2(0, 40)
+
+[node name="VoidDashParticles" type="CPUParticles2D" parent="Player"]
+emission_sphere_radius = 20.0
+direction = Vector2(1, 0)
+spread = 10.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 50.0
+initial_velocity_max = 100.0
+color = Color(0.2, 0.8, 1, 1)
+
+[node name="Trail" type="Line2D" parent="Player"]
+
+[node name="LevelExit" type="Area2D" parent="."]
+position = Vector2(1700, 230)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LevelExit"]
+shape = SubResource("RectangleShape2D_player")
+
+[node name="HUD" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("3_hud")
+
+[node name="ScoreLabel" type="Label" parent="HUD"]
+layout_mode = 1
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 200.0
+offset_bottom = 50.0
+text = "SCORE: 0"
+
+[node name="LivesLabel" type="Label" parent="HUD"]
+layout_mode = 1
+offset_left = 20.0
+offset_top = 50.0
+offset_right = 200.0
+offset_bottom = 80.0
+text = "LIVES: 3"
+
+[node name="TimeLabel" type="Label" parent="HUD"]
+layout_mode = 1
+offset_left = 20.0
+offset_top = 80.0
+offset_right = 200.0
+offset_bottom = 110.0
+text = "TIME: 05:00"
+
+[node name="LevelLabel" type="Label" parent="HUD"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -200.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 50.0
+text = "LEVEL 20"
+
+[node name="CoinsLabel" type="Label" parent="HUD"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -200.0
+offset_top = 50.0
+offset_right = -20.0
+offset_bottom = 80.0
+text = "COINS: 0"
+
+[node name="PowerupContainer" type="HBoxContainer" parent="HUD"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -200.0
+offset_top = 80.0
+offset_right = -20.0
+offset_bottom = 110.0
