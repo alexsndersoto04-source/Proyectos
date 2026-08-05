@@ -1,10 +1,12 @@
-[gd_scene load_steps=8 format=3 uid="uid://bq6l6c0p4k8d2"]
+[gd_scene load_steps=10 format=3 uid="uid://bq6l6c0p4k8d2"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" uid="uid://d4w7h8a2k1p9q" path="res://scenes/player.tscn" id="2_player"]
 [ext_resource type="PackedScene" uid="uid://cjxw7k6s8v3pd" path="res://scenes/obstacle.tscn" id="3_obs"]
 [ext_resource type="Script" path="res://scripts/spawner.gd" id="4_spawn"]
 [ext_resource type="Script" path="res://scripts/bg_stars.gd" id="5_stars"]
+[ext_resource type="AudioStream" uid="uid://score_wav" path="res://assets/sounds/score.wav" id="6_score"]
+[ext_resource type="AudioStream" uid="uid://void_amb" path="res://assets/sounds/void_ambience.wav" id="7_amb"]
 
 [sub_resource type="RectangleShape2D" id="Rect_floor"]
 size = Vector2(2000, 40)
@@ -83,6 +85,17 @@ obstacle_scene = ExtResource("3_obs")
 initial_speed = 420.0
 max_speed = 900.0
 
+[node name="AudioScore" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("6_score")
+volume_db = -4.0
+
+[node name="AudioAmbience" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("7_amb")
+volume_db = -12.0
+autoplay = true
+parameters/looping = true
+bus = &"Master"
+
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="UI" type="Control" parent="CanvasLayer"]
@@ -145,7 +158,7 @@ offset_right = -20.0
 offset_bottom = -12.0
 theme_override_font_sizes/font_size = 14
 theme_override_colors/font_color = Color(0.6, 0.6, 0.75, 1)
-text = "SPACE / TAP = Jump   Double Jump enabled"
+text = "SPACE / TAP = Jump   Double Jump enabled - Con Sonido!"
 
 [node name="GameOverPanel" type="Panel" parent="CanvasLayer/UI"]
 visible = false

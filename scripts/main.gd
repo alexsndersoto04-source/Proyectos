@@ -16,44 +16,38 @@ var is_playing: bool = false
 @onready var game_over_panel: Panel = $CanvasLayer/UI/GameOverPanel
 @onready var game_over_score: Label = $CanvasLayer/UI/GameOverPanel/VBoxContainer/FinalScoreLabel
 @onready var restart_button: Button = $CanvasLayer/UI/GameOverPanel/VBoxContainer/RestartButton
-@onready var floor_parallax: ParallaxBackground = $ParallaxBackground
 @onready var obstacles: Node2D = $Obstacles
 @onready var tap_to_start: Label = $CanvasLayer/UI/TapToStartLabel
-@onready var floor_sprite: Node2D = $Floor
+@onready var audio_score: AudioStreamPlayer = $AudioScore
+@onready var audio_ambience: AudioStreamPlayer = $AudioAmbience
 
 func _ready():
 	load_high_score()
 	update_ui()
 	game_over_panel.visible = false
 	tap_to_start.visible = true
-	# Conectar señales
 	if player:
 		player.died.connect(_on_player_died)
 	if spawner:
 		spawner.obstacle_spawned.connect(_on_obstacle_spawned)
 	if restart_button:
 		restart_button.pressed.connect(restart_game)
-	
-	# Pausar inicio
 	get_tree().paused = false
 	is_playing = false
 	if spawner:
 		spawner.stop_spawning()
+	if audio_ambience:
+		audio_ambience.play()
 
 func _process(delta):
 	if game_over:
 		return
-	
 	if not is_playing:
 		if Input.is_action_just_pressed("jump"):
 			start_game()
 		return
-	
-	# Aumentar score
 	score += points_per_second * delta * (spawner.current_speed / spawner.initial_speed if spawner else 1.0)
 	update_ui()
-	
-	# Dificultad progresiva
 	difficulty_timer += delta
 	if difficulty_timer >= difficulty_increase_every:
 		difficulty_timer = 0
@@ -61,14 +55,13 @@ func _process(delta):
 			spawner.increase_difficulty(25)
 			points_per_second += 0.5
 
-	# Mover floor parallax manualmente si es necesario (se hace en shader/material)
-	# El parallax background se mueve automáticamente si tiene ParallaxLayer con motion
-
 func start_game():
 	is_playing = true
 	tap_to_start.visible = false
 	game_over = false
 	score = 0
+	difficulty_timer = 0
+	points_per_second = 10.0
 	if spawner:
 		spawner.reset()
 		spawner.start_spawning()
@@ -83,14 +76,11 @@ func _on_player_died():
 	is_playing = false
 	if spawner:
 		spawner.stop_spawning()
-	
 	if score > high_score:
 		high_score = score
 		save_high_score()
-	
 	game_over_score.text = "Score: %d\nBest: %d" % [int(score), int(high_score)]
 	game_over_panel.visible = true
-	# Animación game over
 	game_over_panel.modulate.a = 0
 	var tween = create_tween()
 	tween.tween_property(game_over_panel, "modulate:a", 1.0, 0.4)
@@ -105,6 +95,9 @@ func _on_obstacle_spawned(obstacle):
 	obstacle.passed.connect(func(): 
 		if not game_over:
 			score += 15
+			if audio_score:
+				audio_score.pitch_scale = randf_range(0.9, 1.2)
+				audio_score.play()
 	)
 
 func update_ui():

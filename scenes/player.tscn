@@ -1,6 +1,9 @@
-[gd_scene load_steps=8 format=3 uid="uid://d4w7h8a2k1p9q"]
+[gd_scene load_steps=11 format=3 uid="uid://d4w7h8a2k1p9q"]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1"]
+[ext_resource type="AudioStream" uid="uid://jumpwav" path="res://assets/sounds/jump.wav" id="2"]
+[ext_resource type="AudioStream" uid="uid://double_jump_wav" path="res://assets/sounds/double_jump.wav" id="3"]
+[ext_resource type="AudioStream" uid="uid://death_wav" path="res://assets/sounds/death.wav" id="4"]
 
 [sub_resource type="RectangleShape2D" id="Rect_col"]
 size = Vector2(32, 52)
@@ -12,23 +15,15 @@ func _ready():
 	play(\"run\")
 func _draw():
 	pass
-# Visual manual
 func _process(_delta):
 	queue_redraw()
-
 func _notification(what):
 	if what == NOTIFICATION_DRAW:
-		var col = Color(1,1,1)
 		match animation:
 			\"run\":
-				# Body run
 				draw_rect(Rect2(Vector2(-16, -22), Vector2(32, 36)), Color(0.9, 0.9, 1.0))
-				# head
 				draw_circle(Vector2(4, -28), 14, Color(0.95, 0.95, 1.0))
-				draw_circle(Vector2(10, -30), 3, Color(0.2, 0.2, 0.3))
-				# eye glow void
 				draw_circle(Vector2(10, -30), 2, Color(0.4, 0.4, 1.0))
-				# legs anim fake
 				var t = Time.get_ticks_msec() / 100.0
 				var leg_offset = sin(t) * 6
 				draw_rect(Rect2(Vector2(-12 + leg_offset, 12), Vector2(10, 18)), Color(0.7, 0.7, 0.9))
@@ -46,12 +41,10 @@ func _notification(what):
 				draw_rect(Rect2(Vector2(-16, -22), Vector2(34, 36)), Color(0.7, 0.6, 1.0))
 				draw_circle(Vector2(4, -28), 14, Color(0.8, 0.7, 1.0))
 				draw_circle(Vector2(12, -30), 4, Color(1.0, 0.8, 0.3))
-				# aura
 				draw_circle(Vector2.ZERO, 28, Color(0.5, 0.3, 1.0, 0.25))
 			\"die\":
 				draw_rect(Rect2(Vector2(-16, -10), Vector2(32, 20)), Color(1.0, 0.3, 0.3))
 				draw_circle(Vector2(0, -22), 10, Color(1.0, 0.5, 0.5))
-				# X eyes
 				draw_line(Vector2(-4, -26), Vector2(4, -18), Color(0.2,0.2,0.2), 2)
 				draw_line(Vector2(4, -26), Vector2(-4, -18), Color(0.2,0.2,0.2), 2)
 "
@@ -116,4 +109,18 @@ position = Vector2(0, 20)
 emitting = false
 amount = 12
 lifetime = 0.4
-process_material = null
+
+[node name="AudioJump" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2")
+volume_db = -2.0
+bus = &"Master"
+
+[node name="AudioDoubleJump" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("3")
+volume_db = -1.0
+bus = &"Master"
+
+[node name="AudioDeath" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4")
+volume_db = 0.0
+bus = &"Master"

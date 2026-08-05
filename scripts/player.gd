@@ -11,6 +11,9 @@ var on_floor_last: bool = false
 @onready var anim_sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var jump_particles: GPUParticles2D = $JumpParticles
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
+@onready var audio_jump: AudioStreamPlayer = $AudioJump
+@onready var audio_double: AudioStreamPlayer = $AudioDoubleJump
+@onready var audio_death: AudioStreamPlayer = $AudioDeath
 
 signal died
 
@@ -20,31 +23,22 @@ func _ready():
 func _physics_process(delta):
 	if is_dead:
 		return
-
-	# Aplicar gravedad
 	if not is_on_floor():
 		velocity.y += gravity * delta
 	else:
 		if not on_floor_last:
-			# Acaba de caer
 			anim_sprite.play("run")
 			jumps_left = 2 if double_jump_enabled else 1
 			if jump_particles:
 				jump_particles.emitting = false
-
 	on_floor_last = is_on_floor()
-
-	# Input salto
 	if Input.is_action_just_pressed("jump"):
 		try_jump()
-
-	# Animación en aire
 	if not is_on_floor():
 		if velocity.y < 0:
 			anim_sprite.play("jump")
 		else:
 			anim_sprite.play("fall")
-
 	move_and_slide()
 
 func try_jump():
@@ -54,6 +48,9 @@ func try_jump():
 		velocity.y = jump_force
 		jumps_left -= 1
 		anim_sprite.play("jump")
+		if audio_jump:
+			audio_jump.pitch_scale = randf_range(0.9, 1.1)
+			audio_jump.play()
 		if jump_particles:
 			jump_particles.restart()
 			jump_particles.emitting = true
@@ -61,10 +58,12 @@ func try_jump():
 		velocity.y = jump_force * 0.9
 		jumps_left -= 1
 		anim_sprite.play("double_jump")
+		if audio_double:
+			audio_double.pitch_scale = randf_range(0.95, 1.15)
+			audio_double.play()
 		if jump_particles:
 			jump_particles.restart()
 			jump_particles.emitting = true
-		# Efecto visual extra en doble salto
 		var tween = create_tween()
 		tween.tween_property(anim_sprite, "scale", Vector2(1.2, 0.8), 0.05)
 		tween.tween_property(anim_sprite, "scale", Vector2(1.0, 1.0), 0.1)
@@ -74,8 +73,9 @@ func die():
 		return
 	is_dead = true
 	velocity = Vector2.ZERO
+	if audio_death:
+		audio_death.play()
 	anim_sprite.play("die")
-	# Efecto de muerte
 	var tween = create_tween()
 	tween.parallel().tween_property(anim_sprite, "modulate", Color(1,0.2,0.2,1), 0.2)
 	tween.parallel().tween_property(self, "rotation", deg_to_rad(15), 0.3)
