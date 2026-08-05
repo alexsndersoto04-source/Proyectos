@@ -1,104 +1,84 @@
-name: Build Void Runner APK
+name: Exportar APK de Android
 
 on:
   push:
-    branches: [ main, arena/* ]
+    branches: [ "main", "master" ]
   workflow_dispatch:
 
 jobs:
-  build:
+  export-android:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Set up Java 17
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      # 1. Instalar Java (requerido para construir aplicaciones Android)
+      - name: Configurar Java JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Check Project
+      # 2. Instalar SDK de Android y librerías del sistema
+      - name: Instalar Android SDK y dependencias de Godot
         run: |
-          ls -R
-          cat project.godot
-          cat export_presets.cfg | head -n 80
+          sudo apt-get update
+          sudo apt-get install -y wget unzip openjdk-17-jdk libgl1-mesa-dri libasound2 libx11-6 libxcursor1 libxinerama1 libxrandr2 libxi6
+          
+          # Configurar directorio del SDK
+          mkdir -p $HOME/android-sdk/cmdline-tools
+          cd $HOME/android-sdk/cmdline-tools
+          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O tools.zip
+          unzip tools.zip && rm tools.zip
+          mv cmdline-tools latest
 
-      - name: Download Godot 4.2.1
+          # Aceptar licencias e instalar build-tools
+          yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses
+          $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager "build-tools;33.0.2" "platform-tools" "platforms;android-33"
+
+      # 3. Descargar Godot 4.2.1 y la plantilla de exportación de Android
+      - name: Descargar Godot y Templates
         run: |
-          wget -q https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_linux.x86_64.zip
-          unzip -q Godot_v4.2.1-stable_linux.x86_64.zip
+          wget https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_linux.x86_64.zip
+          unzip Godot_v4.2.1-stable_linux.x86_64.zip
           chmod +x Godot_v4.2.1-stable_linux.x86_64
-          ./Godot_v4.2.1-stable_linux.x86_64 --version
 
-      - name: Install Export Templates
-        run: |
+          wget https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_export_templates.tpz
           mkdir -p ~/.local/share/godot/export_templates/4.2.1.stable
-          wget -q https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_export_templates.tpz
-          unzip -q Godot_v4.2.1-stable_export_templates.tpz
-          mv templates/* ~/.local/share/godot/export_templates/4.2.1.stable/
-          ls -lh ~/.local/share/godot/export_templates/4.2.1.stable/ | head -n 20
+          unzip Godot_v4.2.1-stable_export_templates.tpz -d temp_templates
+          mv temp_templates/templates/* ~/.local/share/godot/export_templates/4.2.1.stable/
+          rm -rf temp_templates Godot_v4.2.1-stable_export_templates.tpz
 
-      - name: Create Debug Keystore and Godot Config
+      # 4. Generar clave Keystore de depuración para Android
+      - name: Generar Debug Keystore
         run: |
-          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-          ls -lh debug.keystore
+          keytool -keyalg RSA -genkeypair -alias androiddebugkey -keypass android -keystore debug.keystore -storepass android -dname "CN=Android Debug,O=Android,C=US" -validity 9999
+
+      # 5. Configurar Godot para reconozca las rutas del SDK y Keystore
+      - name: Configurar Editor Settings de Godot
+        run: |
           mkdir -p ~/.config/godot
-          echo "Creating editor settings for Android keystore"
-          cat > ~/.config/godot/editor_settings-4.tres << 'EOF'
-          [gd_resource type="EditorSettings" format=3 uid="uid://editor_settings"]
-          [resource]
-          export/android/debug_keystore="%s/debug.keystore"
-          export/android/debug_keystore_user="androiddebugkey"
-          export/android/debug_keystore_pass="android"
-          export/android/force_system_user=false
-          export/android/adb=""
-          EOF
-          sed -i "s|%s|${{ github.workspace }}|g" ~/.config/godot/editor_settings-4.tres
-          cat ~/.config/godot/editor_settings-4.tres
-          mkdir -p build/android
-          mkdir -p build/web
-          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo '[settings]' > ~/.config/godot/editor_settings-4.godot
+          echo 'export/android/android_sdk_path = "'"$HOME/android-sdk"'"' >> ~/.config/godot/editor_settings-4.godot
+          echo 'export/android/debug_keystore = "'"$PWD/debug.keystore"'"' >> ~/.config/godot/editor_settings-4.godot
+          echo 'export/android/debug_keystore_user = "androiddebugkey"' >> ~/.config/godot/editor_settings-4.godot
+          echo 'export/android/debug_keystore_pass = "android"' >> ~/.config/godot/editor_settings-4.godot
 
-      - name: Import Project (Godot)
+      # 6. PRIMER PASE: Importar assets y solucionar el error de recursos no encontrados
+      - name: Importar assets del proyecto
         run: |
-          ./Godot_v4.2.1-stable_linux.x86_64 --headless --import --path . || true
+          ./Godot_v4.2.1-stable_linux.x86_64 --headless -e --quit || true
 
-      - name: Build APK Debug (Verbose)
+      # 7. SEGUNDO PASE: Generar el APK
+      - name: Exportar APK
         run: |
-          echo "=== Building APK Debug ==="
-          ./Godot_v4.2.1-stable_linux.x86_64 --headless --verbose --export-debug "Android" build/android/VoidRunner.apk || echo "Debug failed"
-          ls -lh build/android/ || true
+          mkdir -p build
+          ./Godot_v4.2.1-stable_linux.x86_64 --headless --export-debug "Android" build/mi_juego.apk
 
-      - name: Build APK Release Fallback
-        if: hashFiles('build/android/VoidRunner.apk') == ''
-        run: |
-          echo "=== Trying Release ==="
-          ./Godot_v4.2.1-stable_linux.x86_64 --headless --verbose --export-release "Android" build/android/VoidRunner.apk || true
-          ls -lh build/android/ || true
-
-      - name: Build Web Fallback
-        run: |
-          ./Godot_v4.2.1-stable_linux.x86_64 --headless --export-release "Web" build/web/index.html || true
-          ls -lh build/web/ || true
-
-      - name: List Builds
-        run: |
-          find build -type f -print
-
-      - name: Upload APK Artifact
-        if: hashFiles('build/android/*.apk') != ''
+      # 8. Subir el APK a GitHub para que lo puedas descargar
+      - name: Subir APK como artefacto
         uses: actions/upload-artifact@v4
         with:
-          name: VoidRunner-APK
-          path: build/android/*.apk
-          if-no-files-found: warn
-
-      - name: Upload Web Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: VoidRunner-Web
-          path: build/web/
-          if-no-files-found: warn
+          name: Mi-Juego-Android-APK
+          path: build/mi_juego.apk
