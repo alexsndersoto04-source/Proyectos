@@ -1,104 +1,47 @@
 name: Build Void Runner APK
-
 on:
   push:
     branches: [ main, arena/* ]
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
-
-      - name: Check Project
-        run: |
-          ls -R
-          cat project.godot
-          cat export_presets.cfg | head -n 80
-
       - name: Download Godot 4.2.1
         run: |
           wget -q https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_linux.x86_64.zip
           unzip -q Godot_v4.2.1-stable_linux.x86_64.zip
           chmod +x Godot_v4.2.1-stable_linux.x86_64
-          ./Godot_v4.2.1-stable_linux.x86_64 --version
-
-      - name: Install Export Templates
+      - name: Install Templates
         run: |
           mkdir -p ~/.local/share/godot/export_templates/4.2.1.stable
           wget -q https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_export_templates.tpz
           unzip -q Godot_v4.2.1-stable_export_templates.tpz
           mv templates/* ~/.local/share/godot/export_templates/4.2.1.stable/
-          ls -lh ~/.local/share/godot/export_templates/4.2.1.stable/ | head -n 20
-
-      - name: Create Debug Keystore and Godot Config
+      - name: Prepare
         run: |
           keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-          ls -lh debug.keystore
           mkdir -p ~/.config/godot
-          echo "Creating editor settings for Android keystore"
-          cat > ~/.config/godot/editor_settings-4.tres << 'EOF'
-          [gd_resource type="EditorSettings" format=3 uid="uid://editor_settings"]
-          [resource]
-          export/android/debug_keystore="%s/debug.keystore"
-          export/android/debug_keystore_user="androiddebugkey"
-          export/android/debug_keystore_pass="android"
-          export/android/force_system_user=false
-          export/android/adb=""
-          EOF
-          sed -i "s|%s|${{ github.workspace }}|g" ~/.config/godot/editor_settings-4.tres
-          cat ~/.config/godot/editor_settings-4.tres
+          echo -e "[gd_resource type=\"EditorSettings\" format=3]\n[resource]\nexport/android/debug_keystore=\"${{ github.workspace }}/debug.keystore\"\nexport/android/debug_keystore_user=\"androiddebugkey\"\nexport/android/debug_keystore_pass=\"android\"" > ~/.config/godot/editor_settings-4.tres
           mkdir -p build/android
-          mkdir -p build/web
-          echo "ANDROID_HOME=$ANDROID_HOME"
-
-      - name: Import Project (Godot)
+      - name: Build APK Direct
         run: |
-          ./Godot_v4.2.1-stable_linux.x86_64 --headless --import --path . || true
-
-      - name: Build APK Debug (Verbose)
-        run: |
-          echo "=== Building APK Debug ==="
-          ./Godot_v4.2.1-stable_linux.x86_64 --headless --verbose --export-debug "Android" build/android/VoidRunner.apk || echo "Debug failed"
-          ls -lh build/android/ || true
-
-      - name: Build APK Release Fallback
-        if: hashFiles('build/android/VoidRunner.apk') == ''
-        run: |
-          echo "=== Trying Release ==="
-          ./Godot_v4.2.1-stable_linux.x86_64 --headless --verbose --export-release "Android" build/android/VoidRunner.apk || true
-          ls -lh build/android/ || true
-
-      - name: Build Web Fallback
-        run: |
-          ./Godot_v4.2.1-stable_linux.x86_64 --headless --export-release "Web" build/web/index.html || true
-          ls -lh build/web/ || true
-
-      - name: List Builds
-        run: |
-          find build -type f -print
-
-      - name: Upload APK Artifact
-        if: hashFiles('build/android/*.apk') != ''
+          timeout 120 ./Godot_v4.2.1-stable_linux.x86_64 --headless --export-debug "Android" build/android/VoidRunner.apk || true
+          ls -lh build/android/
+          if [ ! -f build/android/VoidRunner.apk ]; then
+            timeout 120 ./Godot_v4.2.1-stable_linux.x86_64 --headless --export-release "Android" build/android/VoidRunner.apk || true
+            ls -lh build/android/
+          fi
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: VoidRunner-APK
-          path: build/android/*.apk
-          if-no-files-found: warn
-
-      - name: Upload Web Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: VoidRunner-Web
-          path: build/web/
-          if-no-files-found: warn
+          path: build/android/
