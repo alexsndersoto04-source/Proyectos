@@ -1,0 +1,22 @@
+# Godot
+.godot/
+build/
+*.import
+export_presets.cfg.bak
+
+# Android
+*.keystore
+*.jks
+debug.keystore
+build/android/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp
+*.tmp
+*.log
+templates/
+Godot_v*.zip
+Godot_v*_stable_*

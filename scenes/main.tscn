@@ -1,0 +1,193 @@
+[gd_scene load_steps=8 format=3 uid="uid://bq6l6c0p4k8d2"]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="PackedScene" uid="uid://d4w7h8a2k1p9q" path="res://scenes/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" uid="uid://cjxw7k6s8v3pd" path="res://scenes/obstacle.tscn" id="3_obs"]
+[ext_resource type="Script" path="res://scripts/spawner.gd" id="4_spawn"]
+[ext_resource type="Script" path="res://scripts/bg_stars.gd" id="5_stars"]
+
+[sub_resource type="RectangleShape2D" id="Rect_floor"]
+size = Vector2(2000, 40)
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_main")
+
+[node name="BackgroundColor" type="ColorRect" parent="."]
+z_index = -100
+offset_left = -100.0
+offset_top = -100.0
+offset_right = 1400.0
+offset_bottom = 800.0
+color = Color(0.06, 0.06, 0.14, 1)
+
+[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
+
+[node name="FarStars" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_scale = Vector2(0.05, 0)
+motion_mirroring = Vector2(1280, 0)
+
+[node name="StarsFar" type="Node2D" parent="ParallaxBackground/FarStars"]
+script = ExtResource("5_stars")
+star_count = 100
+speed = 4.0
+layer = 0
+
+[node name="NearStars" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_scale = Vector2(0.25, 0)
+motion_mirroring = Vector2(1280, 0)
+
+[node name="StarsNear" type="Node2D" parent="ParallaxBackground/NearStars"]
+script = ExtResource("5_stars")
+star_count = 50
+speed = 18.0
+layer = 1
+
+[node name="Floor" type="Node2D" parent="."]
+position = Vector2(0, 560)
+
+[node name="FloorVisual" type="ColorRect" parent="Floor"]
+offset_left = -200.0
+offset_top = -10.0
+offset_right = 1500.0
+offset_bottom = 200.0
+color = Color(0.15, 0.15, 0.28, 1)
+
+[node name="FloorTopLine" type="ColorRect" parent="Floor"]
+offset_left = -200.0
+offset_top = -12.0
+offset_right = 1500.0
+offset_bottom = -8.0
+color = Color(0.5, 0.45, 0.9, 1)
+
+[node name="FloorGlow" type="ColorRect" parent="Floor"]
+offset_left = -200.0
+offset_top = -18.0
+offset_right = 1500.0
+offset_bottom = -12.0
+color = Color(0.4, 0.35, 0.8, 0.35)
+
+[node name="StaticBody2D" type="StaticBody2D" parent="Floor"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Floor/StaticBody2D"]
+position = Vector2(640, 0)
+shape = SubResource("Rect_floor")
+
+[node name="Obstacles" type="Node2D" parent="."]
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector2(180, 505)
+
+[node name="Spawner" type="Node2D" parent="."]
+script = ExtResource("4_spawn")
+obstacle_scene = ExtResource("3_obs")
+initial_speed = 420.0
+max_speed = 900.0
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="UI" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ScoreLabel" type="Label" parent="CanvasLayer/UI"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 20.0
+offset_top = 14.0
+offset_right = -20.0
+offset_bottom = 54.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 28
+text = "Score: 0"
+
+[node name="HighScoreLabel" type="Label" parent="CanvasLayer/UI"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 20.0
+offset_top = 48.0
+offset_right = -20.0
+offset_bottom = 72.0
+theme_override_colors/font_color = Color(0.7, 0.7, 0.85, 1)
+theme_override_font_sizes/font_size = 18
+text = "Best: 0"
+
+[node name="TapToStartLabel" type="Label" parent="CanvasLayer/UI"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -100.0
+offset_right = 220.0
+offset_bottom = -40.0
+theme_override_font_sizes/font_size = 32
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "TAP or SPACE to START"
+horizontal_alignment = 1
+
+[node name="ControlsHint" type="Label" parent="CanvasLayer/UI"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -40.0
+offset_right = -20.0
+offset_bottom = -12.0
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.6, 0.6, 0.75, 1)
+text = "SPACE / TAP = Jump   Double Jump enabled"
+
+[node name="GameOverPanel" type="Panel" parent="CanvasLayer/UI"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -170.0
+offset_top = -110.0
+offset_right = 170.0
+offset_bottom = 110.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/UI/GameOverPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = -16.0
+alignment = 1
+
+[node name="GameOverLabel" type="Label" parent="CanvasLayer/UI/GameOverPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+theme_override_colors/font_color = Color(1, 0.35, 0.45, 1)
+text = "VOID CONSUMED"
+horizontal_alignment = 1
+
+[node name="FinalScoreLabel" type="Label" parent="CanvasLayer/UI/GameOverPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Score: 0 Best: 0"
+horizontal_alignment = 1
+
+[node name="RestartButton" type="Button" parent="CanvasLayer/UI/GameOverPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "RETRY  ↻"
