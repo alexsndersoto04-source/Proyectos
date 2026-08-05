@@ -1,0 +1,82 @@
+name: Build Void Runner APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Download Godot
+        run: |
+          wget -q https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_linux.x86_64.zip
+          unzip -o Godot_v4.2.1-stable_linux.x86_64.zip
+          chmod +x Godot_v4.2.1-stable_linux.x86_64
+
+      - name: Install Export Templates
+        run: |
+          wget -q https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_export_templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates
+          unzip -o Godot_v4.2.1-stable_export_templates.tpz
+          mv templates ~/.local/share/godot/export_templates/4.2.1.stable
+
+      - name: Install Android build template
+        run: |
+          mkdir -p android/build
+          unzip -o ~/.local/share/godot/export_templates/4.2.1.stable/android_source.zip -d android/build
+
+      - name: Generate debug keystore
+        run: |
+          keytool -genkey -v -keystore "$RUNNER_TEMP/debug.keystore" \
+            -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass android -keypass android \
+            -dname "CN=Android Debug,O=Android,C=US"
+
+      - name: Configure Godot editor settings
+        run: |
+          mkdir -p ~/.config/godot
+          cat > ~/.config/godot/editor_settings-4.tres <<EOF
+          [gd_resource type="EditorSettings" format=3]
+
+          [resource]
+          export/android/android_sdk_path = "$ANDROID_HOME"
+          export/android/java_sdk_path = "$JAVA_HOME"
+          EOF
+
+      - name: Configure export preset keystore
+        run: |
+          KEYSTORE="$RUNNER_TEMP/debug.keystore"
+          sed -i "s|keystore/debug=\"\"|keystore/debug=\"$KEYSTORE\"|" export_presets.cfg
+          sed -i "s|keystore/debug_user=\"\"|keystore/debug_user=\"androiddebugkey\"|" export_presets.cfg
+          sed -i "s|keystore/debug_password=\"\"|keystore/debug_password=\"android\"|" export_presets.cfg
+          sed -i "s|keystore/release=\"\"|keystore/release=\"$KEYSTORE\"|" export_presets.cfg
+          sed -i "s|keystore/release_user=\"\"|keystore/release_user=\"androiddebugkey\"|" export_presets.cfg
+          sed -i "s|keystore/release_password=\"\"|keystore/release_password=\"android\"|" export_presets.cfg
+
+      - name: Build APK
+        run: |
+          mkdir -p build/android
+          ./Godot_v4.2.1-stable_linux.x86_64 \
+            --headless \
+            --path "$GITHUB_WORKSPACE" \
+            --export-release "Android" \
+            "build/android/VoidRunner.apk"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: VoidRunner-Android
+          path: build/android/*.apk

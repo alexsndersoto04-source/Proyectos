@@ -1,0 +1,20 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a0a1e"/>
+      <stop offset="100%" stop-color="#1a0b2e"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <circle cx="90" cy="110" r="6" fill="#ffffff" opacity="0.8"/>
+  <circle cx="420" cy="80" r="5" fill="#ffffff" opacity="0.6"/>
+  <circle cx="300" cy="60" r="4" fill="#ffffff" opacity="0.7"/>
+  <circle cx="470" cy="220" r="5" fill="#ffffff" opacity="0.5"/>
+  <circle cx="60" cy="300" r="4" fill="#ffffff" opacity="0.6"/>
+  <polygon points="120,256 180,190 320,190 392,256 320,322 180,322" fill="#33ccff"/>
+  <polygon points="256,196 200,322 312,322" fill="#b3e6ff" opacity="0.9"/>
+  <rect x="120" y="356" width="60" height="18" fill="#d9404f" rx="4"/>
+  <rect x="332" y="356" width="60" height="18" fill="#d9404f" rx="4"/>
+  <rect x="96" y="396" width="320" height="24" fill="#2e0f4d" rx="8"/>
+  <rect x="96" y="408" width="320" height="8" fill="#ffd166" opacity="0.7"/>
+</svg>

@@ -1,0 +1,20 @@
+# Godot 4 auto-imported files
+.godot/
+.import/
+*.translation
+export_presets.cfg.bak
+
+# Build output
+build/
+
+# Godot Android build template (installed at build time by CI)
+android/
+
+# Keystores / secrets (never commit real signing keys)
+*.keystore
+*.jks
+debug.keystore
+release.keystore
+
+# Temporary files
+*.tmp
