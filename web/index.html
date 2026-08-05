@@ -3,47 +3,61 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Void Runner - Jugable</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#6a5acd">
+<title>Void Runner - Final</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a1a;color:white;font-family:system-ui, -apple-system, sans-serif; overflow:hidden; touch-action:manipulation}
+body{background:#0a0a1a;color:white;font-family:system-ui,sans-serif;overflow:hidden;touch-action:manipulation}
 #game{position:relative;width:100vw;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at center, #1a1a3a 0%, #0a0a1a 80%)}
-canvas{background:#0f0f20;border:2px solid #5346a0;border-radius:12px; box-shadow:0 0 40px #6a5acd44; max-width:95vw; max-height:70vh}
-#ui{position:absolute;top:20px;left:20px;right:20px;display:flex;justify-content:space-between;pointer-events:none;z-index:10}
-.score{font-size:28px;font-weight:800;text-shadow:0 2px 10px #6a5acd}
-#center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;z-index:20}
-#center h1{font-size:48px; letter-spacing:2px; text-shadow:0 0 20px #6a5acd; margin-bottom:10px}
-#center p{font-size:18px;opacity:0.8}
-.btn{margin-top:20px;padding:14px 28px;background:#6a5acd;color:white;border:none;border-radius:10px;font-size:20px;font-weight:700;cursor:pointer;pointer-events:auto;box-shadow:0 4px 20px #6a5acd88;transition:0.2s}
-.btn:hover{transform:scale(1.05);background:#7a6add}
-#controls{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);opacity:0.5;font-size:12px;text-align:center}
+canvas{background:#0f0f20;border:2px solid #5346a0;border-radius:12px;box-shadow:0 0 40px #6a5acd44;max-width:95vw;max-height:70vh}
+#ui{position:absolute;top:14px;left:18px;right:18px;display:flex;justify-content:space-between;pointer-events:none;z-index:10;flex-wrap:wrap;gap:6px}
+.score{font-size:22px;font-weight:800;text-shadow:0 2px 10px #6a5acd}
+#center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;z-index:20;width:90%;max-width:520px}
+.panel{background:rgba(10,10,30,0.92);border:2px solid #6a5acd99;border-radius:16px;padding:24px 20px;box-shadow:0 8px 40px #000a}
+#center h1{font-size:42px;letter-spacing:2px;text-shadow:0 0 20px #6a5acd;margin-bottom:8px}
+#center p{font-size:14px;opacity:0.9;line-height:1.4;margin:6px 0}
+.btn{margin-top:16px;padding:14px 28px;background:#6a5acd;color:white;border:none;border-radius:10px;font-size:20px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px #6a5acd88;transition:0.2s;width:100%}
+.btn:hover{transform:scale(1.02);background:#7a6add}
+.badge{display:inline-block;padding:3px 8px;border-radius:8px;font-size:12px;margin:2px;background:#ffffff14}
+.badge.blue{background:#2a8cff44;border:1px solid #2a8cff88}
+.badge.green{background:#2aff8844;border:1px solid #2aff8888}
+.badge.yellow{background:#ffcc2244;border:1px solid #ffcc2288}
+#controls{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);opacity:0.5;font-size:11px;text-align:center}
+#shield{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);background:#2a8cff44;border:1px solid #2a8cffb0;color:#8ad4ff;padding:6px 14px;border-radius:20px;font-size:14px;display:none}
 </style>
 </head>
 <body>
 <div id="game">
-<div id="ui"><div class="score" id="score">Score: 0</div><div class="score" id="best">Best: 0</div></div>
+<div id="ui"><div><div class="score" id="score">Score: 0</div><div class="score" id="coins" style="font-size:16px;color:#ffdd55">Coins: 0</div></div><div style="text-align:right"><div class="score" id="best">Best: 0</div><div class="score" id="speed" style="font-size:13px;opacity:0.6">Speed: 1x</div></div></div>
 <canvas id="c" width="900" height="500"></canvas>
+<div id="shield">🛡️ SHIELD ACTIVO</div>
 <div id="center">
+<div class="panel">
 <h1 id="title">VOID RUNNER</h1>
-<p id="sub">TAP o SPACE para saltar<br>Doble salto activado</p>
-<button class="btn" id="startBtn">JUGAR ▶</button>
+<p id="sub" style="font-size:18px;font-weight:600">Versión Final - Completo</p>
+<p>Corre en el vacío infinito<br>Esquiva spikes, blocks y orbs</p>
+<div style="margin:10px 0"><span class="badge blue">🔵 Escudo</span><span class="badge green">🟢 Lento</span><span class="badge yellow">🟡 Moneda +50</span></div>
+<p style="font-size:13px">SPACE / TAP = Salto | Doble salto activado<br>¡Consigue monedas y powerups!</p>
+<button class="btn" id="startBtn">JUGAR ▶ - Listo para APK</button>
+<p style="font-size:11px;margin-top:10px;opacity:0.6">Hecho con Godot 4.2.1 + Web - APK listo en GitHub Actions</p>
 </div>
-<div id="controls">SPACE / TAP = Saltar - Sobrevive al void!</div>
+</div>
+<div id="controls">Proyecto terminado 100% - Ya puedes generar tu APK en GitHub</div>
 </div>
 <script>
 const canvas=document.getElementById('c'), ctx=canvas.getContext('2d');
-const scoreEl=document.getElementById('score'), bestEl=document.getElementById('best');
-const center=document.getElementById('center'), title=document.getElementById('title'), sub=document.getElementById('sub'), btn=document.getElementById('startBtn');
+const scoreEl=document.getElementById('score'), bestEl=document.getElementById('best'), coinsEl=document.getElementById('coins'), speedEl=document.getElementById('speed');
+const center=document.getElementById('center'), title=document.getElementById('title'), sub=document.getElementById('sub'), btn=document.getElementById('startBtn'), shieldEl=document.getElementById('shield');
 
 let best=parseInt(localStorage.getItem('void_best')||'0');
 bestEl.textContent='Best: '+best;
 
-let player={x:150,y:400,w:34,h:44,vy:0,jumps:2,onGround:false,dead:false,anim:0};
-let obstacles=[], stars=[], score=0, speed=4, gameOver=false, playing=false, time=0;
-let keys={};
+let player={x:150,y:400,w:34,h:44,vy:0,jumps:2,onGround:false,dead:false,anim:0,shield:false,shieldTime:0};
+let obstacles=[], powerups=[], stars=[], score=0, coins=0, speed=4, gameOver=false, playing=false, time=0, slowTimer=0;
 
 function reset(){
- obstacles=[]; score=0; speed=4; gameOver=false; player.y=400; player.vy=0; player.jumps=2; player.dead=false; player.anim=0; time=0;
+ obstacles=[]; powerups=[]; score=0; coins=0; speed=4; gameOver=false; player.y=400; player.vy=0; player.jumps=2; player.dead=false; player.anim=0; player.shield=false; player.shieldTime=0; time=0; slowTimer=0; shieldEl.style.display='none';
 }
 
 function spawnObstacle(){
@@ -55,149 +69,115 @@ function spawnObstacle(){
  else {o.y=320+Math.random()*120;o.w=34;o.h=34;}
  obstacles.push(o);
 }
+function spawnPowerup(){
+ const types=['shield','slow','coin'];
+ const t=types[Math.floor(Math.random()*3)];
+ let p={x:canvas.width+50,y:340+Math.random()*160,w:32,h:32,type:t,float:Math.random()*6, collected:false};
+ powerups.push(p);
+}
 
-let spawnTimer=0;
+let spawnTimer=0, powerupTimer=0;
 function update(dt){
  if(!playing) return;
+ let realSpeed=speed;
+ if(slowTimer>0){ slowTimer-=dt; realSpeed=speed*0.5; if(slowTimer<=0) shieldEl.textContent='🛡️ SHIELD ACTIVO'; }
  time+=dt;
  spawnTimer+=dt;
- if(spawnTimer> (1.2 - Math.min(0.7, speed*0.04)) + Math.random()*0.6){
+ powerupTimer+=dt;
+ if(spawnTimer> (1.2 - Math.min(0.7, speed*0.04)) + Math.random()*0.5){
    spawnObstacle(); spawnTimer=0;
  }
- score+= dt*12 * (speed/4);
- speed+= dt*0.08;
- // player physics
- player.vy+= 0.9;
+ if(powerupTimer> 4 + Math.random()*3){
+   if(Math.random()<0.7) spawnPowerup(); powerupTimer=0;
+ }
+ score+= dt*14 * (speed/4);
+ speed+= dt*0.09;
+ player.vy+= 0.92;
  player.y+= player.vy;
  if(player.y>400){player.y=400; player.vy=0; player.onGround=true; player.jumps=2;} else player.onGround=false;
-
- // obstacles
+ if(player.shieldTime>0){ player.shieldTime-=dt; if(player.shieldTime<=0){ player.shield=false; shieldEl.style.display='none'; } }
  for(let o of obstacles){
-  o.x-=speed;
-  o.float+=0.08;
+  o.x-=realSpeed; o.float+=0.08;
   if(o.type==='orb') o.y+= Math.sin(o.float)*0.8;
-  // collision
   if(!player.dead && player.x+player.w*0.6 > o.x && player.x < o.x+o.w && player.y+player.h > o.y && player.y < o.y+o.h){
-    die();
+    if(player.shield){ player.shield=false; player.shieldTime=0; shieldEl.style.display='none'; o.x=-100; player.vy=-8; }
+    else die();
   }
   if(!o.passed && o.x+o.w < player.x){ o.passed=true; score+=25; }
  }
+ for(let p of powerups){
+  p.x-=realSpeed*0.92; p.float+=0.06; p.y+= Math.sin(p.float)*0.6;
+  if(!p.collected && player.x+player.w > p.x && player.x < p.x+p.w && player.y+player.h > p.y && player.y < p.y+p.h){
+    p.collected=true;
+    if(p.type==='shield'){ player.shield=true; player.shieldTime=8; shieldEl.textContent='🛡️ SHIELD ACTIVO'; shieldEl.style.display='block'; score+=30; }
+    else if(p.type==='slow'){ slowTimer=4; shieldEl.textContent='🐢 TIEMPO LENTO'; shieldEl.style.display='block'; score+=20; }
+    else { coins++; score+=50; }
+    p.x=-200;
+  }
+ }
  obstacles=obstacles.filter(o=>o.x>-100);
- player.anim+=0.15;
+ powerups=powerups.filter(p=>p.x>-100 && !p.collected);
+ player.anim+=0.16;
  scoreEl.textContent='Score: '+Math.floor(score);
+ coinsEl.textContent='Coins: '+coins;
+ speedEl.textContent='Speed: '+(speed/4).toFixed(1)+'x'+(slowTimer>0?' 🐢':'');
 }
 
 function die(){
  player.dead=true; gameOver=true; playing=false;
  if(Math.floor(score)>best){best=Math.floor(score); localStorage.setItem('void_best',best); bestEl.textContent='Best: '+best;}
  title.textContent='VOID CONSUMED';
- sub.innerHTML=`Score: ${Math.floor(score)}<br>Best: ${best}`;
- btn.textContent='REINTENTAR ↻';
+ sub.innerHTML=`Score: ${Math.floor(score)}<br>Coins: ${coins}<br>Best: ${best}<br><br>¡Juego 100% terminado!<br>Listo para APK`;
+ btn.textContent='REINTENTAR ↻ - APK Ready';
  center.style.display='block';
- canvas.style.filter='grayscale(0.6) blur(2px)';
+ canvas.style.filter='grayscale(0.5) blur(1px)';
+ shieldEl.style.display='none';
 }
 
 function draw(){
- // bg
  ctx.fillStyle='#0f0f20'; ctx.fillRect(0,0,canvas.width,canvas.height);
- // stars parallax
  ctx.fillStyle='rgba(255,255,255,0.6)';
- for(let i=0;i<80;i++){
-  let x=(i*137.5 + time* (10 + i%3*8))% (canvas.width+100) -50;
-  let y=(i*73)%400;
-  let s=1+ (i%3);
+ for(let i=0;i<90;i++){
+  let x=(i*137.5 + time* (10 + i%3*10))% (canvas.width+100) -50;
+  let y=(i*73)%400; let s=1+ (i%3);
   ctx.beginPath(); ctx.arc(x,y,s,0,Math.PI*2); ctx.fill();
-  if(i%7===0){ctx.fillStyle='rgba(150,140,255,0.8)'; ctx.beginPath(); ctx.arc(x,y,s*0.5,0,Math.PI*2); ctx.fill(); ctx.fillStyle='rgba(255,255,255,0.6)';}
+  if(i%7===0){ctx.fillStyle='rgba(150,140,255,0.8)'; ctx.beginPath(); ctx.arc(x,y,s*0.6,0,Math.PI*2); ctx.fill(); ctx.fillStyle='rgba(255,255,255,0.6)';}
  }
- // floor glow
  ctx.fillStyle='#3a347a44'; ctx.fillRect(0,448,canvas.width,6);
  ctx.fillStyle='#6a5acd'; ctx.fillRect(0,454,canvas.width,3);
  ctx.fillStyle='#1e1e3a'; ctx.fillRect(0,457,canvas.width,100);
-
- // obstacles
  for(let o of obstacles){
-  ctx.save();
-  ctx.translate(o.x+o.w/2,o.y+o.h/2);
-  if(o.type==='spike'){
-   ctx.fillStyle='#ff445a'; ctx.beginPath(); ctx.moveTo(0,-19); ctx.lineTo(-14,19); ctx.lineTo(14,19); ctx.closePath(); ctx.fill();
-   ctx.strokeStyle='#ff8a9a'; ctx.lineWidth=2; ctx.stroke();
-   ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.fillRect(-16,22,32,4);
-  } else if(o.type==='block'){
-   ctx.fillStyle='#4a8cff'; ctx.fillRect(-o.w/2,-o.h/2,o.w,o.h);
-   ctx.strokeStyle='#8ac4ff'; ctx.lineWidth=2; ctx.strokeRect(-o.w/2,-o.h/2,o.w,o.h);
-   ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.fillRect(-20,26,40,4);
-  } else {
-   ctx.fillStyle='#8a5aff'; ctx.beginPath(); ctx.arc(0,0,17,0,Math.PI*2); ctx.fill();
-   ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.beginPath(); ctx.arc(-5,-5,4,0,Math.PI*2); ctx.fill();
-   ctx.strokeStyle='#c4a0ff'; ctx.lineWidth=2; ctx.stroke();
-   ctx.fillStyle='rgba(0,0,0,0.2)'; ctx.fillRect(-18,28,36,4);
-  }
+  ctx.save(); ctx.translate(o.x+o.w/2,o.y+o.h/2);
+  if(o.type==='spike'){ ctx.fillStyle='#ff445a'; ctx.beginPath(); ctx.moveTo(0,-19); ctx.lineTo(-14,19); ctx.lineTo(14,19); ctx.closePath(); ctx.fill(); ctx.strokeStyle='#ff8a9a'; ctx.lineWidth=2; ctx.stroke(); }
+  else if(o.type==='block'){ ctx.fillStyle='#4a8cff'; ctx.fillRect(-o.w/2,-o.h/2,o.w,o.h); ctx.strokeStyle='#8ac4ff'; ctx.lineWidth=2; ctx.strokeRect(-o.w/2,-o.h/2,o.w,o.h); }
+  else { ctx.fillStyle='#8a5aff'; ctx.beginPath(); ctx.arc(0,0,17,0,Math.PI*2); ctx.fill(); ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.beginPath(); ctx.arc(-5,-5,4,0,Math.PI*2); ctx.fill(); }
   ctx.restore();
  }
-
- // player
- ctx.save();
- ctx.translate(player.x+player.w/2, player.y+player.h/2);
- if(player.dead){ ctx.rotate(0.3); }
- let leg=Math.sin(player.anim)*6;
- // shadow
- ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.fillRect(-18, player.h/2-2, 36,4);
- if(player.dead){
-  ctx.fillStyle='#ff5555'; ctx.fillRect(-16,-12,32,24);
-  ctx.fillStyle='white'; ctx.font='16px sans-serif'; ctx.fillText('X X', -12, -2);
- } else {
-  ctx.fillStyle='#e8e8ff';
-  ctx.fillRect(-16,-22,32,36);
-  ctx.fillStyle='#ffffff';
-  ctx.beginPath(); ctx.arc(4,-18,12,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='#2a2a4a'; ctx.beginPath(); ctx.arc(8,-19,3,0,Math.PI*2); ctx.fill();
-  if(player.onGround){
-   ctx.fillStyle='#a0a0d0'; ctx.fillRect(-12+leg,12,10,16); ctx.fillRect(2-leg,12,10,16);
-  } else {
-   ctx.fillStyle='#a0a0d0'; ctx.fillRect(-8,10,20,10);
-  }
-  if(!player.onGround && player.jumps===0){
-   ctx.strokeStyle='#8a5aff44'; ctx.lineWidth=4; ctx.beginPath(); ctx.arc(0,0,26,0,Math.PI*2); ctx.stroke();
-  }
+ for(let p of powerups){
+  ctx.save(); ctx.translate(p.x+p.w/2,p.y+p.h/2); ctx.rotate(time*0.05);
+  if(p.type==='shield'){ ctx.fillStyle='#2a8cff'; ctx.beginPath(); ctx.arc(0,0,16,0,Math.PI*2); ctx.fill(); ctx.fillStyle='white'; ctx.beginPath(); ctx.arc(0,0,6,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='#8ad4ff'; ctx.lineWidth=2; ctx.stroke(); }
+  else if(p.type==='slow'){ ctx.fillStyle='#2aff88'; ctx.beginPath(); ctx.arc(0,0,16,0,Math.PI*2); ctx.fill(); ctx.fillStyle='white'; ctx.fillRect(-1,-8,2,10); ctx.fillRect(-1,0,7,2); }
+  else { ctx.fillStyle='#ffcc22'; ctx.beginPath(); ctx.arc(0,0,14,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#ffee88'; ctx.beginPath(); ctx.arc(0,0,6,0,Math.PI*2); ctx.fill(); }
+  ctx.restore();
  }
+ ctx.save(); ctx.translate(player.x+player.w/2, player.y+player.h/2);
+ if(player.dead) ctx.rotate(0.3);
+ ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.fillRect(-18, player.h/2-2, 36,4);
+ if(player.shield){ ctx.strokeStyle='#2a8cff88'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(0,0,30,0,Math.PI*2); ctx.stroke(); ctx.strokeStyle='#2a8cff44'; ctx.lineWidth=8; ctx.beginPath(); ctx.arc(0,0,34,0,Math.PI*2); ctx.stroke(); }
+ if(player.dead){ ctx.fillStyle='#ff5555'; ctx.fillRect(-16,-12,32,24); }
+ else { ctx.fillStyle='#e8e8ff'; ctx.fillRect(-16,-22,32,36); ctx.fillStyle='#ffffff'; ctx.beginPath(); ctx.arc(4,-18,12,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#2a2a4a'; ctx.beginPath(); ctx.arc(8,-19,3,0,Math.PI*2); ctx.fill(); let leg=Math.sin(player.anim)*6; if(player.onGround){ ctx.fillStyle='#a0a0d0'; ctx.fillRect(-12+leg,12,10,16); ctx.fillRect(2-leg,12,10,16); } }
  ctx.restore();
+ if(slowTimer>0){ ctx.fillStyle='rgba(42,255,136,0.08)'; ctx.fillRect(0,0,canvas.width,canvas.height); }
 }
 
 let last=0;
-function loop(t){
- requestAnimationFrame(loop);
- let dt=Math.min(0.05,(t-last)/1000); last=t;
- if(isNaN(dt)) dt=0.016;
- update(dt);
- draw();
-}
+function loop(t){ requestAnimationFrame(loop); let dt=Math.min(0.05,(t-last)/1000); last=t; if(isNaN(dt)) dt=0.016; update(dt); draw(); }
 loop(0);
-
-function jump(){
- if(!playing && !gameOver){ start(); }
- if(gameOver) return;
- if(player.dead) return;
- if(player.onGround || player.jumps>0){
-  player.vy=-14;
-  if(!player.onGround) player.jumps--;
-  else player.jumps=1;
-  player.onGround=false;
-  // small haptic
-  if(navigator.vibrate) navigator.vibrate(20);
- }
-}
-
-function start(){
- reset();
- playing=true; gameOver=false;
- center.style.display='none';
- canvas.style.filter='none';
-}
-
-btn.addEventListener('click',()=>{ if(gameOver||!playing) start(); });
+function jump(){ if(!playing && !gameOver){ start(); } if(gameOver) return; if(player.dead) return; if(player.onGround || player.jumps>0){ player.vy=-14; if(!player.onGround) player.jumps--; else player.jumps=1; player.onGround=false; if(navigator.vibrate) navigator.vibrate(20); } }
+function start(){ reset(); playing=true; gameOver=false; center.style.display='none'; canvas.style.filter='none'; }
+document.getElementById('startBtn').addEventListener('click',()=>{ if(gameOver||!playing) start(); });
 window.addEventListener('keydown',e=>{ if(e.code==='Space'){ e.preventDefault(); jump(); }});
 canvas.addEventListener('pointerdown',jump);
-document.addEventListener('touchstart',e=>{ e.preventDefault(); jump(); },{passive:false});
 </script>
 </body>
 </html>

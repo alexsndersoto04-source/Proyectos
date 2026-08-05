@@ -1,22 +1,18 @@
-[gd_scene load_steps=11 format=3 uid="uid://d4w7h8a2k1p9q"]
+[gd_scene load_steps=13 format=3 uid="uid://d4w7h8a2k1p9q"]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1"]
 [ext_resource type="AudioStream" uid="uid://jumpwav" path="res://assets/sounds/jump.wav" id="2"]
 [ext_resource type="AudioStream" uid="uid://double_jump_wav" path="res://assets/sounds/double_jump.wav" id="3"]
 [ext_resource type="AudioStream" uid="uid://death_wav" path="res://assets/sounds/death.wav" id="4"]
+[ext_resource type="Script" path="res://scripts/bg_stars.gd" id="5_shield_draw"]
 
 [sub_resource type="RectangleShape2D" id="Rect_col"]
 size = Vector2(32, 52)
 
 [sub_resource type="Script" id="Script_draw" ]
 source_code = "extends AnimatedSprite2D
-var current_anim: String = \"run\"
-func _ready():
-	play(\"run\")
-func _draw():
-	pass
-func _process(_delta):
-	queue_redraw()
+func _ready(): play(\"run\")
+func _process(_d): queue_redraw()
 func _notification(what):
 	if what == NOTIFICATION_DRAW:
 		match animation:
@@ -49,47 +45,33 @@ func _notification(what):
 				draw_line(Vector2(4, -26), Vector2(-4, -18), Color(0.2,0.2,0.2), 2)
 "
 
+[sub_resource type="Script" id="Script_shield"]
+source_code = "extends Node2D
+func _draw():
+	draw_circle(Vector2.ZERO, 30, Color(0.2, 0.7, 1.0, 0.15))
+	draw_circle(Vector2.ZERO, 30, Color(0.4, 0.85, 1.0, 0.8), false, 3)
+	draw_circle(Vector2.ZERO, 34, Color(0.2, 0.7, 1.0, 0.3), false, 1.5)
+func _process(_d):
+	rotation += 0.05
+	queue_redraw()
+"
+
 [sub_resource type="SpriteFrames" id="SF"]
 animations = [{
-"frames": [{
-"duration": 1.0,
-"texture": null
-}],
-"loop": true,
-"name": &"die",
-"speed": 5.0
+"frames": [{"duration": 1.0,"texture": null}],
+"loop": true,"name": &"die","speed": 5.0
 }, {
-"frames": [{
-"duration": 1.0,
-"texture": null
-}],
-"loop": true,
-"name": &"double_jump",
-"speed": 5.0
+"frames": [{"duration": 1.0,"texture": null}],
+"loop": true,"name": &"double_jump","speed": 5.0
 }, {
-"frames": [{
-"duration": 1.0,
-"texture": null
-}],
-"loop": true,
-"name": &"fall",
-"speed": 5.0
+"frames": [{"duration": 1.0,"texture": null}],
+"loop": true,"name": &"fall","speed": 5.0
 }, {
-"frames": [{
-"duration": 1.0,
-"texture": null
-}],
-"loop": true,
-"name": &"jump",
-"speed": 5.0
+"frames": [{"duration": 1.0,"texture": null}],
+"loop": true,"name": &"jump","speed": 5.0
 }, {
-"frames": [{
-"duration": 1.0,
-"texture": null
-}],
-"loop": true,
-"name": &"run",
-"speed": 5.0
+"frames": [{"duration": 1.0,"texture": null}],
+"loop": true,"name": &"run","speed": 5.0
 }]
 
 [node name="Player" type="CharacterBody2D" groups=["player"]]
@@ -104,6 +86,10 @@ sprite_frames = SubResource("SF")
 animation = &"run"
 script = SubResource("Script_draw")
 
+[node name="ShieldVisual" type="Node2D" parent="."]
+visible = false
+script = SubResource("Script_shield")
+
 [node name="JumpParticles" type="GPUParticles2D" parent="."]
 position = Vector2(0, 20)
 emitting = false
@@ -113,14 +99,11 @@ lifetime = 0.4
 [node name="AudioJump" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2")
 volume_db = -2.0
-bus = &"Master"
 
 [node name="AudioDoubleJump" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("3")
 volume_db = -1.0
-bus = &"Master"
 
 [node name="AudioDeath" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("4")
 volume_db = 0.0
-bus = &"Master"

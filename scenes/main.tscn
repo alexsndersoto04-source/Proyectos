@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://bq6l6c0p4k8d2"]
+[gd_scene load_steps=13 format=3 uid="uid://bq6l6c0p4k8d2"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" uid="uid://d4w7h8a2k1p9q" path="res://scenes/player.tscn" id="2_player"]
@@ -7,6 +7,8 @@
 [ext_resource type="Script" path="res://scripts/bg_stars.gd" id="5_stars"]
 [ext_resource type="AudioStream" uid="uid://score_wav" path="res://assets/sounds/score.wav" id="6_score"]
 [ext_resource type="AudioStream" uid="uid://void_amb" path="res://assets/sounds/void_ambience.wav" id="7_amb"]
+[ext_resource type="AudioStream" uid="uid://powerup_wav" path="res://assets/sounds/powerup.wav" id="8_power"]
+[ext_resource type="PackedScene" uid="uid://powerup123" path="res://scenes/powerup.tscn" id="9_power_scn"]
 
 [sub_resource type="RectangleShape2D" id="Rect_floor"]
 size = Vector2(2000, 40)
@@ -76,12 +78,15 @@ shape = SubResource("Rect_floor")
 
 [node name="Obstacles" type="Node2D" parent="."]
 
+[node name="PowerUps" type="Node2D" parent="."]
+
 [node name="Player" parent="." instance=ExtResource("2_player")]
 position = Vector2(180, 505)
 
 [node name="Spawner" type="Node2D" parent="."]
 script = ExtResource("4_spawn")
 obstacle_scene = ExtResource("3_obs")
+powerup_scene = ExtResource("9_power_scn")
 initial_speed = 420.0
 max_speed = 900.0
 
@@ -93,8 +98,10 @@ volume_db = -4.0
 stream = ExtResource("7_amb")
 volume_db = -12.0
 autoplay = true
-parameters/looping = true
-bus = &"Master"
+
+[node name="AudioPowerUp" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("8_power")
+volume_db = -2.0
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
@@ -130,35 +137,99 @@ theme_override_colors/font_color = Color(0.7, 0.7, 0.85, 1)
 theme_override_font_sizes/font_size = 18
 text = "Best: 0"
 
-[node name="TapToStartLabel" type="Label" parent="CanvasLayer/UI"]
+[node name="CoinsLabel" type="Label" parent="CanvasLayer/UI"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 20.0
+offset_top = 70.0
+offset_right = -20.0
+offset_bottom = 94.0
+theme_override_colors/font_color = Color(1.0, 0.9, 0.3, 1)
+theme_override_font_sizes/font_size = 18
+text = "Coins: 0"
+
+[node name="ShieldIndicator" type="ColorRect" parent="CanvasLayer/UI"]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = -50.0
+offset_top = -80.0
+offset_right = 50.0
+offset_bottom = -50.0
+color = Color(0.2, 0.7, 1.0, 0.25)
+
+[node name="ShieldLabel" type="Label" parent="CanvasLayer/UI/ShieldIndicator"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(0.4, 0.85, 1.0, 1)
+theme_override_font_sizes/font_size = 16
+text = "SHIELD"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StartPanel" type="Panel" parent="CanvasLayer/UI"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -220.0
-offset_top = -100.0
-offset_right = 220.0
-offset_bottom = -40.0
-theme_override_font_sizes/font_size = 32
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-text = "TAP or SPACE to START"
-horizontal_alignment = 1
+offset_left = -260.0
+offset_top = -160.0
+offset_right = 260.0
+offset_bottom = 120.0
 
-[node name="ControlsHint" type="Label" parent="CanvasLayer/UI"]
+[node name="VBox" type="VBoxContainer" parent="CanvasLayer/UI/StartPanel"]
 layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 20.0
-offset_top = -40.0
+offset_top = 20.0
 offset_right = -20.0
-offset_bottom = -12.0
+offset_bottom = -20.0
+alignment = 1
+
+[node name="Title" type="Label" parent="CanvasLayer/UI/StartPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 48
+theme_override_colors/font_color = Color(0.6, 0.5, 1.0, 1)
+text = "VOID RUNNER"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="CanvasLayer/UI/StartPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.8, 0.8, 0.9, 1)
+text = "Corre en el vacio infinito - Esquiva, salta, sobrevive"
+horizontal_alignment = 1
+
+[node name="Controls" type="Label" parent="CanvasLayer/UI/StartPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "TAP o SPACE para saltar
+Doble salto activado"
+horizontal_alignment = 1
+
+[node name="PowerupsInfo" type="Label" parent="CanvasLayer/UI/StartPanel/VBox"]
+layout_mode = 2
 theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.6, 0.6, 0.75, 1)
-text = "SPACE / TAP = Jump   Double Jump enabled - Con Sonido!"
+theme_override_colors/font_color = Color(0.6, 0.8, 1.0, 1)
+text = "🔵 Escudo = Protege 1 golpe | 🟢 Lento = Camara lenta | 🟡 Moneda = +50"
+horizontal_alignment = 1
+
+[node name="StartHint" type="Label" parent="CanvasLayer/UI/StartPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "Presiona ESPACIO para empezar"
 
 [node name="GameOverPanel" type="Panel" parent="CanvasLayer/UI"]
 visible = false
@@ -168,10 +239,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -170.0
-offset_top = -110.0
-offset_right = 170.0
-offset_bottom = 110.0
+offset_left = -180.0
+offset_top = -120.0
+offset_right = 180.0
+offset_bottom = 120.0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/UI/GameOverPanel"]
 layout_mode = 1
@@ -193,14 +264,14 @@ text = "VOID CONSUMED"
 horizontal_alignment = 1
 
 [node name="FinalScoreLabel" type="Label" parent="CanvasLayer/UI/GameOverPanel/VBoxContainer"]
-custom_minimum_size = Vector2(0, 50)
+custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
-text = "Score: 0 Best: 0"
+text = "Score: 0"
 horizontal_alignment = 1
 
 [node name="RestartButton" type="Button" parent="CanvasLayer/UI/GameOverPanel/VBoxContainer"]
-custom_minimum_size = Vector2(0, 48)
+custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 22
 text = "RETRY  ↻"
