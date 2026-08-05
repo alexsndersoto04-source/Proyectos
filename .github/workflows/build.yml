@@ -41,14 +41,18 @@ jobs:
       - name: Build Android APK
         run: |
           mkdir -p build/android
-          set -o pipefail
           godot --headless --verbose --export-debug "Android" \
             "build/android/${EXPORT_NAME}.apk" > export.log 2>&1
           echo "Export exit code: $?"
           echo "--- Archivos en build/android: ---"
           ls -la build/android/ || true
-          echo "--- Fin del export.log ---"
-          cat export.log
+          # Publica el log completo como anotaciones (para poder leerlo)
+          i=0
+          while IFS= read -r line; do
+            i=$((i+1))
+            echo "::error file=export.log,line=$i::${line//%/%25}"
+          done < export.log
+          echo "--- FIN export.log ($i líneas) ---"
           # Falla explícitamente si no se generó el APK
           if [ ! -f "build/android/${EXPORT_NAME}.apk" ]; then
             echo "❌ NO se generó el APK"
