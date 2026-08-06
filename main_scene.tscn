@@ -1,0 +1,40 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://main_scene.gd" id="1"]
+[ext_resource type="Script" path="res://player.gd" id="2"]
+
+[node name="MainScene" type="Node2D"]
+script = ExtResource("1")
+
+[node name="ColorRectBackground" type="ColorRect" parent="."]
+offset_right = 1152.0
+offset_bottom = 648.0
+color = Color(0.08, 0.08, 0.1, 1)
+
+[node name="StaticBody2D_Suelo" type="StaticBody2D" parent="."]
+position = Vector2(0, 550)
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="StaticBody2D_Suelo"]
+polygon = PackedVector2Array(0, 0, 1152, 0, 1152, 100, 0, 100)
+
+[node name="ColorRectSuelo" type="ColorRect" parent="StaticBody2D_Suelo"]
+offset_right = 1152.0
+offset_bottom = 100.0
+color = Color(0.2, 0.25, 0.3, 1)
+
+[node name="CharacterBody2D_Player" type="CharacterBody2D" parent="."]
+position = Vector2(200, 400)
+script = ExtResource("2")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="CharacterBody2D_Player"]
+polygon = PackedVector2Array(-15, -30, 15, -30, 15, 30, -15, 30)
+
+[node name="ColorRectBody" type="ColorRect" parent="CharacterBody2D_Player"]
+offset_left = -15.0
+offset_top = -30.0
+offset_right = 15.0
+offset_bottom = 30.0
+color = Color(0.85, 0.3, 0.3, 1)
+
+[node name="Camera2D" type="Camera2D" parent="CharacterBody2D_Player"]
+position_smoothing_enabled = true
