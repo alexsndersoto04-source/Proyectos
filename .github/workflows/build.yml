@@ -5,94 +5,27 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
-env:
-  EXPORT_NAME: VoidRunner
-  ANDROID_HOME: /usr/lib/android-sdk
-  GODOT_ANDROID_KEYSTORE_DEBUG_PATH: /root/debug.keystore
-  GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
-  GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: android
-
 jobs:
-  build:
+  export-android:
     runs-on: ubuntu-latest
-    container:
-      image: barichello/godot-ci:4.2.1
+    name: Export APK Godot
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Código
+        uses: actions/checkout@v4
 
-      - name: Preparar entorno Godot
-        run: |
-          set -x
-          export HOME=/root
-          mkdir -p /root/.config/godot
-          printf '%s\n' \
-            '[gd_resource type="EditorSettings" format=3]' \
-            '' \
-            '[resource]' \
-            'export/android/android_sdk_path = "/usr/lib/android-sdk"' \
-            'export/android/java_sdk_path = "/usr/lib/jvm/java-17-openjdk-amd64"' \
-            'export/android/debug_keystore = "/root/debug.keystore"' \
-            'export/android/debug_keystore_user = "androiddebugkey"' \
-            'export/android/debug_keystore_pass = "android"' \
-            'export/android/force_system_user = false' \
-            > /root/.config/godot/editor_settings-4.tres
-          mkdir -p android/build
-          unzip -o /root/.local/share/godot/export_templates/4.2.1.stable/android_source.zip -d android/build >/dev/null 2>&1
-          ls android/build/build.gradle && echo "OK build template"
-          ls -la /root/debug.keystore && echo "OK keystore"
-          ls /usr/lib/android-sdk/platform-tools/adb && echo "OK adb"
-          ls /root/.local/share/godot/export_templates/4.2.1.stable/ | grep -i android
-          godot --version
+      - name: Exportar APK usando Godot 4.2.1
+        uses: firebelley/godot-export@v6.0.0
+        with:
+          godot_version: 4.2.1
+          export_debug: true
+          export_preset: Android
+          project_subpath: "."
 
-      - name: Importar assets
-        run: |
-          export HOME=/root
-          godot --headless --path "$GITHUB_WORKSPACE" --editor --quit >/dev/null 2>&1 || true
-          echo "Import terminado"
-
-      - name: Compilar APK
-        id: build
-        run: |
-          export HOME=/root
-          cd "$GITHUB_WORKSPACE"
-          mkdir -p build/android
-          set +e
-          godot --headless --verbose --export-debug "Android" \
-            "$GITHUB_WORKSPACE/build/android/${EXPORT_NAME}.apk" > export.log 2>&1
-          echo "exit=$?"
-          cat export.log
-          echo "=== Buscando APK ==="
-          find "$GITHUB_WORKSPACE" -name "*.apk"
-          ls -la build/android/ || true
-          if [ -f "build/android/${EXPORT_NAME}.apk" ]; then
-            echo "APK_OK=true" >> "$GITHUB_ENV"
-          else
-            echo "APK_OK=false" >> "$GITHUB_ENV"
-          fi
-
-      - name: Publicar log de diagnóstico (siempre)
-        if: always()
-        run: |
-          export HOME=/root
-          cd "$GITHUB_WORKSPACE"
-          git config --global user.email "ci@example.com"
-          git config --global user.name "ci"
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          { echo "=== EXPORT LOG ==="; cat export.log 2>/dev/null; echo "=== APK OK: $APK_OK ==="; } > /tmp/diag.log
-          git fetch origin logs 2>/dev/null || true
-          git checkout -B logs 2>/dev/null || git switch --orphan logs 2>/dev/null
-          cp /tmp/diag.log diag.log
-          git add -f diag.log
-          git -c commit.gpgsign=false commit -m "diag $(date +%s)" 2>/dev/null || true
-          git push -f origin HEAD:logs 2>&1 | tail -3
-
-      - name: Subir APK
-        if: env.APK_OK == 'true'
+      - name: Subir APK como Artefacto
         uses: actions/upload-artifact@v4
         with:
-          name: VoidRunner-Android
-          path: build/android/*.apk
+          name: VoidRunner-Android-APK
+          path: |
+            build/android/*.apk
+            **/*.apk
           if-no-files-found: error
