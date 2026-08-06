@@ -6,26 +6,45 @@ on:
   workflow_dispatch:
 
 jobs:
-  export-android:
+  build-apk:
     runs-on: ubuntu-latest
-    name: Export APK Godot
+    container:
+      image: barichello/godot-ci:4.2.1
+
     steps:
-      - name: Checkout Código
+      - name: Descargar codigo del repositorio
         uses: actions/checkout@v4
 
-      - name: Exportar APK usando Godot 4.2.1
-        uses: firebelley/godot-export@v6.0.0
-        with:
-          godot_version: 4.2.1
-          export_debug: true
-          export_preset: Android
-          project_subpath: "."
+      - name: Configurar entorno y exportar APK
+        run: |
+          # 1. Crear directorios necesarios
+          mkdir -p ~/.config/godot
+          mkdir -p ~/.local/share/godot/export_templates/4.2.1.stable
+          mkdir -p build/android
 
-      - name: Subir APK como Artefacto
+          # 2. Configurar el editor de Godot en el contenedor
+          cat << 'EOF' > ~/.config/godot/editor_settings-4.tres
+          [gd_resource type="EditorSettings" format=3]
+
+          [resource]
+          export/android/android_sdk_path = "/usr/lib/android-sdk"
+          export/android/java_sdk_path = "/usr/lib/jvm/java-17-openjdk-amd64"
+          export/android/debug_keystore = "/root/debug.keystore"
+          export/android/debug_keystore_user = "androiddebugkey"
+          export/android/debug_keystore_pass = "android"
+          export/android/force_system_user = false
+          EOF
+
+          # 3. Importar assets del proyecto
+          godot --headless --editor --quit || true
+
+          # 4. Compilar APK en modo Debug
+          echo "Compilando APK..."
+          godot --headless --verbose --export-debug "Android" build/android/VoidRunner.apk
+
+      - name: Verificar y Subir APK como Artefacto
         uses: actions/upload-artifact@v4
         with:
-          name: VoidRunner-Android-APK
-          path: |
-            build/android/*.apk
-            **/*.apk
+          name: VoidRunner-APK
+          path: build/android/*.apk
           if-no-files-found: error
