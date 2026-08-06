@@ -21,7 +21,7 @@ jobs:
       - name: Instalar Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Descargar Godot 4.2.1 y Export Templates
+      - name: Descargar Godot 4.2.1 y Plantillas
         run: |
           wget -q https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_linux.x86_64.zip
           unzip -q Godot_v4.2.1-stable_linux.x86_64.zip
@@ -38,12 +38,11 @@ jobs:
           mkdir -p ~/.android
           keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
 
-      - name: Configurar Godot y Exportar APK
+      - name: Exportar APK
         run: |
           mkdir -p ~/.config/godot
           mkdir -p build/android
 
-          # Inyectar variables dinámicas del entorno de GitHub
           cat << EOF > ~/.config/godot/editor_settings-4.tres
           [gd_resource type="EditorSettings" format=3]
 
@@ -55,23 +54,8 @@ jobs:
           export/android/debug_keystore_pass = "android"
           EOF
 
-          # Extraer plantillas de gradle si no existen
-          if [ ! -d "android/build" ]; then
-            mkdir -p android/build
-            unzip -q ~/.local/share/godot/export_templates/4.2.1.stable/android_source.zip -d android/build
-          fi
-
-          echo "=== IMPORTANDO ASSETS ==="
           godot --headless --editor --quit || true
-
-          echo "=== COMPILANDO APK ==="
-          godot --headless --verbose --export-debug "Android" build/android/VoidRunner.apk
-
-          # Validar que el APK realmente existe antes de avanzar
-          if [ ! -f "build/android/VoidRunner.apk" ]; then
-            echo "ERROR CRÍTICO: El archivo APK no fue generado por Godot."
-            exit 1
-          fi
+          godot --headless --export-debug "Android" build/android/VoidRunner.apk
 
       - name: Subir APK como Artefacto
         uses: actions/upload-artifact@v4
