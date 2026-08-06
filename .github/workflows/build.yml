@@ -33,48 +33,37 @@ jobs:
           unzip -q Godot_v4.2.1-stable_export_templates.tpz -d ~/.local/share/godot/export_templates/4.2.1.stable
           mv ~/.local/share/godot/export_templates/4.2.1.stable/templates/* ~/.local/share/godot/export_templates/4.2.1.stable/
 
-      - name: Crear Keystore de prueba
+      - name: Crear Keystore de Android
         run: |
-          keytool -keyalg RSA -genkeypair -alias androiddebugkey -keypass android -keystore ~/.android/debug.keystore -storepass android -dname "CN=Android Debug,O=Android,C=US" -validity 9999
+          mkdir -p /home/runner/.android
+          keytool -genkey -v -keystore /home/runner/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
 
       - name: Configurar Godot y Exportar APK
         run: |
-          mkdir -p ~/.config/godot
+          mkdir -p /home/runner/.config/godot
           mkdir -p build/android
 
-          # Configurar rutas absolutas
-          cat << EOF > ~/.config/godot/editor_settings-4.tres
+          cat << 'EOF' > /home/runner/.config/godot/editor_settings-4.tres
           [gd_resource type="EditorSettings" format=3]
 
           [resource]
-          export/android/android_sdk_path = "${ANDROID_HOME}"
-          export/android/java_sdk_path = "${JAVA_HOME}"
-          export/android/debug_keystore = "${HOME}/.android/debug.keystore"
+          export/android/android_sdk_path = "/usr/local/lib/android/sdk"
+          export/android/java_sdk_path = "/usr/lib/jvm/temurin-17-jdk-amd64"
+          export/android/debug_keystore = "/home/runner/.android/debug.keystore"
           export/android/debug_keystore_user = "androiddebugkey"
           export/android/debug_keystore_pass = "android"
           EOF
 
-          # Extraer plantilla fuente de Android si no existe
           if [ ! -d "android/build" ]; then
             mkdir -p android/build
-            unzip -q ~/.local/share/godot/export_templates/4.2.1.stable/android_source.zip -d android/build
+            unzip -q /home/runner/.local/share/godot/export_templates/4.2.1.stable/android_source.zip -d android/build
           fi
 
           echo "=== IMPORTANDO RECURSOS ==="
           godot --headless --editor --quit || true
 
-          echo "=== INICIANDO EXPORTACION ==="
-          godot --headless --verbose --export-debug "Android" build/android/VoidRunner.apk 2>&1 | tee godot_export.log
-
-          echo "=== ARCHIVOS RESULTANTES ==="
-          find . -name "*.apk"
-
-      - name: Subir Log en caso de fallo
-        if: failure() || always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: godot-export-log
-          path: godot_export.log
+          echo "=== EXPORTANDO APK ==="
+          godot --headless --export-debug "Android" build/android/VoidRunner.apk
 
       - name: Subir APK como Artefacto
         uses: actions/upload-artifact@v4
