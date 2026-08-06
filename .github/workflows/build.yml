@@ -46,11 +46,9 @@ jobs:
           echo "Export exit code: $?"
           echo "--- Archivos en build/android: ---"
           ls -la build/android/ || true
-          echo "===INICIO-EXPORT-LOG==="
-          cat export.log
-          echo "===FIN-EXPORT-LOG==="
-          sed 's/%/%25/g' export.log | sed 's/</%3C/g; s/>/%3E/g; s/&/%26/g' | while IFS= read -r line; do
-            echo "::error::$line"
+          echo "===ULTIMAS-10-LINEAS==="
+          tail -10 export.log | while IFS= read -r line; do
+            printf '::error::%s\n' "$line"
           done
           if [ ! -f "build/android/${EXPORT_NAME}.apk" ]; then
             echo "❌ NO se generó el APK"
