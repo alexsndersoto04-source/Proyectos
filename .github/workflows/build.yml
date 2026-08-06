@@ -35,39 +35,47 @@ jobs:
 
       - name: Crear Keystore de Android
         run: |
-          mkdir -p /home/runner/.android
-          keytool -genkey -v -keystore /home/runner/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          mkdir -p ~/.android
+          keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
 
       - name: Configurar Godot y Exportar APK
         run: |
-          mkdir -p /home/runner/.config/godot
+          mkdir -p ~/.config/godot
           mkdir -p build/android
 
-          cat << 'EOF' > /home/runner/.config/godot/editor_settings-4.tres
+          # Inyectar variables dinámicas del entorno de GitHub
+          cat << EOF > ~/.config/godot/editor_settings-4.tres
           [gd_resource type="EditorSettings" format=3]
 
           [resource]
-          export/android/android_sdk_path = "/usr/local/lib/android/sdk"
-          export/android/java_sdk_path = "/usr/lib/jvm/temurin-17-jdk-amd64"
-          export/android/debug_keystore = "/home/runner/.android/debug.keystore"
+          export/android/android_sdk_path = "${ANDROID_HOME}"
+          export/android/java_sdk_path = "${JAVA_HOME}"
+          export/android/debug_keystore = "${HOME}/.android/debug.keystore"
           export/android/debug_keystore_user = "androiddebugkey"
           export/android/debug_keystore_pass = "android"
           EOF
 
+          # Extraer plantillas de gradle si no existen
           if [ ! -d "android/build" ]; then
             mkdir -p android/build
-            unzip -q /home/runner/.local/share/godot/export_templates/4.2.1.stable/android_source.zip -d android/build
+            unzip -q ~/.local/share/godot/export_templates/4.2.1.stable/android_source.zip -d android/build
           fi
 
-          echo "=== IMPORTANDO RECURSOS ==="
+          echo "=== IMPORTANDO ASSETS ==="
           godot --headless --editor --quit || true
 
-          echo "=== EXPORTANDO APK ==="
-          godot --headless --export-debug "Android" build/android/VoidRunner.apk
+          echo "=== COMPILANDO APK ==="
+          godot --headless --verbose --export-debug "Android" build/android/VoidRunner.apk
+
+          # Validar que el APK realmente existe antes de avanzar
+          if [ ! -f "build/android/VoidRunner.apk" ]; then
+            echo "ERROR CRÍTICO: El archivo APK no fue generado por Godot."
+            exit 1
+          fi
 
       - name: Subir APK como Artefacto
         uses: actions/upload-artifact@v4
         with:
           name: VoidRunner-APK
-          path: "**/*.apk"
+          path: build/android/VoidRunner.apk
           if-no-files-found: error
