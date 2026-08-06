@@ -7,7 +7,6 @@ on:
 
 env:
   EXPORT_NAME: VoidRunner
-  HOME: /root
 
 jobs:
   build:
@@ -19,35 +18,43 @@ jobs:
         with:
           lfs: true
 
-      - name: Configurar editor settings de Godot 4.2
+      - name: Instalar templates y keystore en rutas que Godot 4.2 vea
         run: |
-          # Godot 4.2.1 lee editor_settings-4.tres (versión MAYOR)
-          mkdir -p /root/.config/godot
-          cat > /root/.config/godot/editor_settings-4.tres <<'EOF'
-          [gd_resource type="EditorSettings" format=3]
+          set -x
+          export HOME=/root
+          # 1. Copiar templates al HOME real (que GitHub pone en /__w/...)
+          mkdir -p ~/.local/share/godot/export_templates/4.2.1.stable
+          cp /root/.local/share/godot/export_templates/4.2.1.stable/android_* \
+             ~/.local/share/godot/export_templates/4.2.1.stable/ 2>/dev/null || true
+          # 2. Copiar la keystore al HOME real
+          cp /root/debug.keystore ~/debug.keystore 2>/dev/null || true
+          # 3. Escribir editor_settings-4.tres (SIN sangrado en heredoc)
+          mkdir -p ~/.config/godot
+          cat > ~/.config/godot/editor_settings-4.tres <<EOF
+[gd_resource type="EditorSettings" format=3]
 
-          [resource]
-          export/android/android_sdk_path = "/usr/lib/android-sdk"
-          export/android/java_sdk_path = "/usr/lib/jvm/java-17-openjdk-amd64"
-          export/android/debug_keystore = "/root/debug.keystore"
-          export/android/debug_keystore_user = "androiddebugkey"
-          export/android/debug_keystore_pass = "android"
-          export/android/force_system_user = false
-          export/android/timestamping_authority_url = ""
-          EOF
+[resource]
+export/android/android_sdk_path = "/usr/lib/android-sdk"
+export/android/java_sdk_path = "/usr/lib/jvm/java-17-openjdk-amd64"
+export/android/debug_keystore = "$HOME/debug.keystore"
+export/android/debug_keystore_user = "androiddebugkey"
+export/android/debug_keystore_pass = "android"
+EOF
+          echo "=== HOME=$HOME ==="
           echo "=== Verificaciones ==="
-          ls -la /root/debug.keystore && echo "OK keystore"
-          ls /usr/lib/android-sdk/platform-tools/adb >/dev/null 2>&1 && echo "OK sdk"
-          ls /root/.local/share/godot/export_templates/4.2.1.stable/android_debug.apk && echo "OK templates"
+          ls ~/.local/share/godot/export_templates/4.2.1.stable/ | grep android
+          ls -la ~/debug.keystore
+          cat ~/.config/godot/editor_settings-4.tres
 
       - name: Build APK
         run: |
           export HOME=/root
+          cd "$GITHUB_WORKSPACE"
           mkdir -p build/android
           godot --headless --verbose --export-debug "Android" \
-            "build/android/${EXPORT_NAME}.apk" 2>&1 | tail -40
-          echo "--- Archivos generados: ---"
-          ls -la build/android/
+            "$GITHUB_WORKSPACE/build/android/${EXPORT_NAME}.apk" 2>&1 | tail -50
+          echo "--- Archivos: ---"
+          ls -la "$GITHUB_WORKSPACE/build/android/"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
