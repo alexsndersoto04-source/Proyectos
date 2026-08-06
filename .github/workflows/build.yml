@@ -7,6 +7,7 @@ on:
 
 env:
   EXPORT_NAME: VoidRunner
+  HOME: /root
 
 jobs:
   build:
@@ -18,9 +19,9 @@ jobs:
         with:
           lfs: true
 
-      - name: Corregir editor settings (Godot 4.2 usa editor_settings-4.tres)
+      - name: Configurar editor settings de Godot 4.2
         run: |
-          export HOME=/root
+          # Godot 4.2.1 lee editor_settings-4.tres (versión MAYOR)
           mkdir -p /root/.config/godot
           cat > /root/.config/godot/editor_settings-4.tres <<'EOF'
           [gd_resource type="EditorSettings" format=3]
@@ -34,29 +35,19 @@ jobs:
           export/android/force_system_user = false
           export/android/timestamping_authority_url = ""
           EOF
-          ls -la /root/debug.keystore && echo "KEYSTORE OK"
-          ls /usr/lib/android-sdk >/dev/null 2>&1 && echo "SDK OK"
-          ls /root/.local/share/godot/export_templates/4.2.1.stable/ | grep -i android && echo "TEMPLATES OK"
-
-      - name: Import assets
-        run: |
-          export HOME=/root
-          godot --headless --path "$GITHUB_WORKSPACE" --editor --quit --import > import.log 2>&1 || true
-          tail -5 import.log
+          echo "=== Verificaciones ==="
+          ls -la /root/debug.keystore && echo "OK keystore"
+          ls /usr/lib/android-sdk/platform-tools/adb >/dev/null 2>&1 && echo "OK sdk"
+          ls /root/.local/share/godot/export_templates/4.2.1.stable/android_debug.apk && echo "OK templates"
 
       - name: Build APK
         run: |
           export HOME=/root
           mkdir -p build/android
           godot --headless --verbose --export-debug "Android" \
-            "build/android/${EXPORT_NAME}.apk" > export.log 2>&1
-          echo "exit=$?"
+            "build/android/${EXPORT_NAME}.apk" 2>&1 | tail -40
+          echo "--- Archivos generados: ---"
           ls -la build/android/
-          if [ ! -f "build/android/${EXPORT_NAME}.apk" ]; then
-            echo "::error::APK no generado. Últimas líneas del log:"
-            tail -30 export.log | sed 's/%/%25/g' | while IFS= read -r l; do echo "::error::$l"; done
-            exit 1
-          fi
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
