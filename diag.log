@@ -1,0 +1,51 @@
+=== EXPORT LOG ===
+Godot Engine v4.2.1.stable.official.b09f793f5 - https://godotengine.org
+TextServer: Added interface "Dummy"
+TextServer: Added interface "ICU / HarfBuzz / Graphite (Built-in)"
+Using "default" pen tablet driver...
+JoypadLinux: udev enabled and loaded successfully.
+ 
+TextServer: Primary interface set to: "ICU / HarfBuzz / Graphite (Built-in)".
+CORE API HASH: 915626997
+EDITOR API HASH: 1313472085
+WARNING: Custom cursor shape not supported by this display server.
+     at: cursor_set_custom_image (servers/display_server.cpp:505)
+EditorSettings: Load OK!
+WARNING: Blend file import is enabled in the project settings, but no Blender path is configured in the editor settings. Blend files will not be imported.
+     at: _editor_init (modules/gltf/register_types.cpp:63)
+Loaded system CA certificates
+EditorSettings: Save OK!
+export: begin: Exporting for Android steps: 105
+Exporting for Android...
+- debug build: true
+- export path: /__w/Proyectos/Proyectos/build/android/VoidRunner.apk
+- export format: 0
+- sign build: true
+- gradle build enabled: true
+- apk expansion enabled: false
+- enabled abis: arm64-v8a
+- export filter: 0
+- include filter: 
+- exclude filter: 
+Using default splash image.
+Creating splash background color image.
+Loading regular icon from 
+- falling back to project icon: res://icon.svg
+Loading adaptive foreground icon from 
+- falling back to using the regular icon
+0 param: --xr_mode_regular
+1 param: --use_immersive
+Starting gradle build...
+Checking build version...
+ERROR: Export: Trying to build from a gradle built template, but no version info for it exists. Please reinstall from the 'Project' menu.
+   at: add_message (editor/export/editor_export_platform.h:182)
+export: end
+ERROR: Project export for preset "Android" failed.
+   at: _fs_changed (editor/editor_node.cpp:994)
+EditorSettings: Save OK!
+XR: Clearing primary interface
+XR: Removed interface "Native mobile"
+XR: Removed interface "OpenXR"
+Orphan StringName: Node (static: 4, total: 5)
+StringName: 1 unclaimed string names at exit.
+=== APK OK: false ===
