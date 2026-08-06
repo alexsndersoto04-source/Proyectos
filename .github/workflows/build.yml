@@ -12,17 +12,15 @@ jobs:
       image: barichello/godot-ci:4.2.1
 
     steps:
-      - name: Descargar codigo del repositorio
+      - name: Descargar codigo
         uses: actions/checkout@v4
 
-      - name: Configurar entorno y exportar APK
+      - name: Configurar entorno Godot y Diagnosticar
         run: |
-          # 1. Crear directorios necesarios
           mkdir -p ~/.config/godot
-          mkdir -p ~/.local/share/godot/export_templates/4.2.1.stable
           mkdir -p build/android
 
-          # 2. Configurar el editor de Godot en el contenedor
+          # Configurar settings de Godot
           cat << 'EOF' > ~/.config/godot/editor_settings-4.tres
           [gd_resource type="EditorSettings" format=3]
 
@@ -32,17 +30,25 @@ jobs:
           export/android/debug_keystore = "/root/debug.keystore"
           export/android/debug_keystore_user = "androiddebugkey"
           export/android/debug_keystore_pass = "android"
-          export/android/force_system_user = false
           EOF
 
-          # 3. Importar assets del proyecto
+          # Instalar plantillas de compilacion de Android si no existen
+          if [ ! -d "android/build" ]; then
+            echo "Instalando build template de Android..."
+            mkdir -p android/build
+            unzip -o /root/.local/share/godot/export_templates/4.2.1.stable/android_source.zip -d android/build > /dev/null 2>&1
+          fi
+
+          echo "=== IMPORTANDO ASSETS ==="
           godot --headless --editor --quit || true
 
-          # 4. Compilar APK en modo Debug
-          echo "Compilando APK..."
+          echo "=== INTENTANDO EXPORTAR APK ==="
           godot --headless --verbose --export-debug "Android" build/android/VoidRunner.apk
 
-      - name: Verificar y Subir APK como Artefacto
+          echo "=== CONTENIDO DE LA CARPETA BUILD ==="
+          ls -la build/android/
+
+      - name: Subir APK como Artefacto
         uses: actions/upload-artifact@v4
         with:
           name: VoidRunner-APK
