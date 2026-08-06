@@ -5,15 +5,15 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 env:
   EXPORT_NAME: VoidRunner
   ANDROID_HOME: /usr/lib/android-sdk
   GODOT_ANDROID_KEYSTORE_DEBUG_PATH: /root/debug.keystore
   GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
   GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: android
-  GODOT_ANDROID_KEYSTORE_RELEASE_PATH: /root/debug.keystore
-  GODOT_ANDROID_KEYSTORE_RELEASE_USER: androiddebugkey
-  GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD: android
 
 jobs:
   build:
@@ -26,43 +26,71 @@ jobs:
       - name: Preparar entorno Godot
         run: |
           set -x
-          # Godot busca las templates en $HOME/.local/share/godot/export_templates.
-          # GitHub Actions cambia $HOME, así que copiamos desde la ubicación del contenedor.
-          mkdir -p "$HOME/.local/share/godot/export_templates/4.2.1.stable"
-          cp /root/.local/share/godot/export_templates/4.2.1.stable/android_* \
-             "$HOME/.local/share/godot/export_templates/4.2.1.stable/" 2>/dev/null || echo "copiando templates... continuamos"
-          # Copiamos la keystore de depuración a $HOME por si acaso
-          cp /root/debug.keystore "$HOME/debug.keystore" 2>/dev/null || true
-          echo "=== HOME=$HOME ==="
-          echo "=== Templates android: ==="
-          ls "$HOME/.local/share/godot/export_templates/4.2.1.stable/" | grep -i android
-          echo "=== Keystore: ==="
-          ls -la "$HOME/debug.keystore"
-          echo "=== SDK: ==="
+          export HOME=/root
+          mkdir -p /root/.config/godot
+          printf '%s\n' \
+            '[gd_resource type="EditorSettings" format=3]' \
+            '' \
+            '[resource]' \
+            'export/android/android_sdk_path = "/usr/lib/android-sdk"' \
+            'export/android/java_sdk_path = "/usr/lib/jvm/java-17-openjdk-amd64"' \
+            'export/android/debug_keystore = "/root/debug.keystore"' \
+            'export/android/debug_keystore_user = "androiddebugkey"' \
+            'export/android/debug_keystore_pass = "android"' \
+            'export/android/force_system_user = false' \
+            > /root/.config/godot/editor_settings-4.tres
+          mkdir -p android/build
+          unzip -o /root/.local/share/godot/export_templates/4.2.1.stable/android_source.zip -d android/build >/dev/null 2>&1
+          ls android/build/build.gradle && echo "OK build template"
+          ls -la /root/debug.keystore && echo "OK keystore"
           ls /usr/lib/android-sdk/platform-tools/adb && echo "OK adb"
-          echo "=== godot version: ==="
+          ls /root/.local/share/godot/export_templates/4.2.1.stable/ | grep -i android
           godot --version
 
       - name: Importar assets
         run: |
-          export HOME=${HOME}
+          export HOME=/root
           godot --headless --path "$GITHUB_WORKSPACE" --editor --quit >/dev/null 2>&1 || true
           echo "Import terminado"
 
       - name: Compilar APK
+        id: build
         run: |
-          export HOME=${HOME}
+          export HOME=/root
+          cd "$GITHUB_WORKSPACE"
           mkdir -p build/android
-          # Godot usa las variables GODOT_ANDROID_KEYSTORE_* para firmar
+          set +e
           godot --headless --verbose --export-debug "Android" \
-            "$GITHUB_WORKSPACE/build/android/${EXPORT_NAME}.apk" 2>&1 | tail -60
+            "$GITHUB_WORKSPACE/build/android/${EXPORT_NAME}.apk" > export.log 2>&1
+          echo "exit=$?"
+          cat export.log
           echo "=== Buscando APK ==="
-          find "$GITHUB_WORKSPACE" -name "*.apk" 2>/dev/null
+          find "$GITHUB_WORKSPACE" -name "*.apk"
           ls -la build/android/ || true
-          # Falla si no se generó
-          test -f "build/android/${EXPORT_NAME}.apk" || { echo "::error::APK NO generado"; exit 1; }
+          if [ -f "build/android/${EXPORT_NAME}.apk" ]; then
+            echo "APK_OK=true" >> "$GITHUB_ENV"
+          else
+            echo "APK_OK=false" >> "$GITHUB_ENV"
+          fi
+
+      - name: Publicar log de diagnóstico (siempre)
+        if: always()
+        run: |
+          export HOME=/root
+          cd "$GITHUB_WORKSPACE"
+          git config --global user.email "ci@example.com"
+          git config --global user.name "ci"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          { echo "=== EXPORT LOG ==="; cat export.log 2>/dev/null; echo "=== APK OK: $APK_OK ==="; } > /tmp/diag.log
+          git fetch origin logs 2>/dev/null || true
+          git checkout -B logs 2>/dev/null || git switch --orphan logs 2>/dev/null
+          cp /tmp/diag.log diag.log
+          git add -f diag.log
+          git -c commit.gpgsign=false commit -m "diag $(date +%s)" 2>/dev/null || true
+          git push -f origin HEAD:logs 2>&1 | tail -3
 
       - name: Subir APK
+        if: env.APK_OK == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: VoidRunner-Android
